@@ -3,7 +3,30 @@ import { Dna, Activity, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import FileUpload from "./FileUpload";
 import Analytics from "./Analytics";
-
+import { Upload, CheckCircle2, Target, Download, Share2 } from "lucide-react";
+// ...existing code...
+// DNA Background Animation Component
+const DNABackground = () => (
+  <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-10">
+    <div className="absolute inset-0">
+      {[...Array(25)].map((_, i) => (
+        <div
+          key={i}
+          className="absolute w-1 bg-gradient-to-b from-blue-400 via-purple-500 to-cyan-400 animate-pulse"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            height: `${Math.random() * 150 + 50}px`,
+            animationDelay: `${Math.random() * 3}s`,
+            transform: `rotate(${Math.random() * 360}deg)`,
+            animationDuration: `${Math.random() * 2 + 1}s`
+          }}
+        />
+      ))}
+    </div>
+    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-cyan-50/30" />
+  </div>
+);
 export default function DNAAnalyzer() {
   const [sequences, setSequences] = useState([]);
   const [results, setResults] = useState([]);
@@ -11,9 +34,7 @@ export default function DNAAnalyzer() {
   const [loading, setLoading] = useState(false);
   const [expandedIdx, setExpandedIdx] = useState(0);
   const [inputShrink, setInputShrink] = useState(false);
-  // Generate a random number between 0 and 1
-  const ran = Math.random();
-  // Ref for analysis section
+  const [processingStep, setProcessingStep] = useState('');
   const analysisRef = useRef(null);
   const navigate = useNavigate();
 
@@ -44,14 +65,20 @@ export default function DNAAnalyzer() {
     setResults([]);
     setError("");
     setInputShrink(true);
+    setProcessingStep('Initializing analysis...');
 
     const newResults = [];
     const sequenceCache = {};
-    for (let seq of sequences) {
+    
+    for (let i = 0; i < sequences.length; i++) {
+      const seq = sequences[i];
+      setProcessingStep(`Analyzing sequence ${i + 1} of ${sequences.length}...`);
+      
       if (sequenceCache[seq]) {
         newResults.push(sequenceCache[seq]);
         continue;
       }
+      
       try {
         const res = await fetch("http://localhost:8000/predict", {
           method: "POST",
@@ -77,24 +104,23 @@ export default function DNAAnalyzer() {
 
     setResults(newResults);
     setLoading(false);
+    setProcessingStep('');
   };
 
   // Risk level helper
   const getRiskLevel = (value) => {
-    if (value < 0.3) return { level: "Low", color: "bg-green-100 text-green-700" };
-    if (value < 0.7) return { level: "Medium", color: "bg-yellow-100 text-yellow-700" };
-    return { level: "High", color: "bg-red-100 text-red-700" };
+    if (value < 0.3) return { level: "Low", color: "bg-green-100 text-green-800 border-green-200" };
+    if (value < 0.7) return { level: "Medium", color: "bg-yellow-100 text-yellow-800 border-yellow-200" };
+    return { level: "High", color: "bg-red-100 text-red-800 border-red-200" };
   };
 
   const handleDownloadReport = async () => {
     if (!results[expandedIdx] || results[expandedIdx].error) return;
-    // Generate transmission and drug_resistant as in Analytics
     const res = results[expandedIdx];
     const rand1 = Math.floor(Math.random() * 9) + 1;
     const rand2 = Math.floor(Math.random() * 9) + 1;
     const transmission = Math.min(8, Math.max(3, (res.transmission ?? 0) + rand1)) / 10;
     const drug_resistant = Math.min(8, Math.max(3, (res.drug_resistant ?? 0) + rand2)) / 10;
-    // Calculate mutation (same as Analytics.jsx logic)
     const mutation = (transmission + drug_resistant + 0.1) / 2;
     const sequence = results[expandedIdx].sequence;
 
@@ -106,11 +132,10 @@ export default function DNAAnalyzer() {
           transmission,
           drug_resistant,
           mutation,
-          sequence, // add this field
+          sequence,
         }),
       });
       const data = await reportRes.json();
-      // Download as text file
       const blob = new Blob([data.summary], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -124,189 +149,273 @@ export default function DNAAnalyzer() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8">
-      <div className="max-w-6xl mx-auto px-6">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="flex justify-center items-center mb-4">
-            <div className="bg-blue-600 p-4 rounded-2xl">
-              <Dna className="w-12 h-12 text-white" />
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 relative">
+      <DNABackground />
+      
+      <div className="relative z-10 py-4">
+        <div className="max-w-7xl mx-auto px-6">
+          {/* Header */}
+          <div className="text-center mb-8">
+            
+            <h1 className="text-5xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent mb-1">
+              🧬 DNA Sequence Analyzer
+            </h1>
+            <p className="text-xl md:text-xl text-gray-700 max-w-4xl mx-auto leading-relaxed">
+              Advanced pathogen genomics analysis platform powered by machine learning. 
+              Upload multiple DNA sequences and get comprehensive risk assessments.
+            </p>
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3">
-            DNA Sequence Analyzer
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Upload multiple DNA files and analyze each sequence
-          </p>
-        </div>
 
-        {/* Input Section */}
-        <div
-          className={`transition-all duration-300 mb-8 ${
-            inputShrink && results.length > 0 ? "max-w-xs mx-auto cursor-pointer" : "w-full"
-          }`}
-          onClick={() => {
-            if (inputShrink && results.length > 0) setInputShrink(false);
-          }}
-        >
+          {/* Input Section */}
           <div
-            className={`bg-white rounded-2xl shadow-xl ${
-              inputShrink && results.length > 0 ? "p-4" : "p-8"
+            className={`transition-all duration-500 mb-8${
+              inputShrink && results.length > 0 ? "max-w-md mx-auto cursor-pointer transform hover:scale-105" : "w-full"
             }`}
+            onClick={() => {
+              if (inputShrink && results.length > 0) setInputShrink(false);
+            }}
           >
-            <h2
-              className={`font-bold ${
-                inputShrink && results.length > 0 ? "text-lg mb-2" : "text-2xl mb-6"
+            <div
+              className={`bg-gradient-to-l from-red-50 to bg-purple-50 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 transition-all duration-500 ${
+                inputShrink && results.length > 0 ? "p-6" : "p-8 pt-6"
               }`}
             >
-              Input DNA Sequences
-            </h2>
+              <h2
+                className={`font-bold flex items-center ${
+                  inputShrink && results.length > 0 ? "text-xl mb-4" : "text-3xl mb-8"
+                } text-gray-800`}
+              >
+                <Upload className={`mr-3 text-blue-600 ${inputShrink ? 'w-6 h-6' : 'w-8 h-8'}`} />
+                DNA Sequence Input Portal
+              </h2>
 
-            {/* File Upload */}
-            {!inputShrink && (
-              <>
-                <FileUpload onFilesRead={handleFilesRead} />
+              {/* File Upload */}
+              {!inputShrink && (
+                <>
+                  <FileUpload onFilesRead={handleFilesRead} />
 
-                {/* Loaded Sequences + Analyze Button */}
-                <div className="mt-6">
-                  {sequences.length > 0 && (
-                    <div>
-                      <h3 className="text-lg font-semibold mb-2">Loaded Sequences:</h3>
-                      <ul className="list-disc ml-6 mb-4">
-                        {sequences.map((seq, idx) => (
-                          <li
-                            key={idx}
-                            className="text-sm text-gray-700 truncate max-w-xl"
+                  {/* Loaded Sequences + Analyze Button */}
+                  <div className="mt-8">
+                    {sequences.length > 0 && (
+                      <div>
+                        <h3 className="text-xl font-bold mb- bg-amber-100 rounded-4xl flex items-center text-gray-800">
+                          <CheckCircle2 className="w-6 h-6 mr-2 text-green-600" />
+                          Loaded Sequences ({sequences.length})
+                        </h3>
+                        <div className="bg-gray-50 rounded-2xl p-6 mb- max-h-48 overflow-y-auto">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {sequences.map((seq, idx) => (
+                              <div
+                                key={idx}
+                                className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm"
+                              >
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="font-semibold text-gray-800">Sequence {idx + 1}</span>
+                                  <span className="text-xs text-gray-500 bg-blue-100 px-2 py-1 rounded-full">
+                                    {seq.length} bp
+                                  </span>
+                                </div>
+                                <code className="text-xs text-gray-700 font-mono break-all">
+                                  {seq.slice(0, 80)}{seq.length > 80 ? "..." : ""}
+                                </code>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="flex justify-center">
+                          <button
+                            type="button"
+                            onClick={handleAnalyzeAll}
+                            disabled={loading}
+                            className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 text-white px-12 py-4 rounded-2xl font-bold text-xl hover:from-blue-700 hover:via-purple-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-300 flex items-center space-x-3 shadow-2xl"
                           >
-                            {seq.slice(0, 60)}
-                            {seq.length > 60 ? "..." : ""}
-                          </li>
-                        ))}
-                      </ul>
-
-                      <button
-                        type="button"
-                        onClick={handleAnalyzeAll}
-                        disabled={loading}
-                        className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
-                      >
-                        {loading ? (
-                          <>
-                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                            <span>Analyzing...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Activity className="w-5 h-5" />
-                            <span>Analyze All</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-
-            {/* Shrunk input view */}
-            {inputShrink && results.length > 0 && (
-              <div className="flex items-center justify-center h-16">
-                <span className="text-blue-600 font-semibold">Click to expand input section</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Error Display */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-8">
-            <div className="flex items-center">
-              <AlertCircle className="w-5 h-5 text-red-600 mr-2" />
-              <span className="text-red-800 font-medium">{error}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Results */}
-        {results.length > 0 && (
-          <div ref={analysisRef} className="space-y-8">
-            {/* Buttons for each sequence */}
-            <div className="flex flex-wrap gap-4 mb-8">
-              {results.map((res, idx) => {
-                const risk = getRiskLevel(res.transmission ?? 0);
-                return (
-                  <button
-                    key={idx}
-                    className={`rounded-xl px-4 py-2 shadow font-semibold text-sm border-2 transition-all duration-200 ${
-                      expandedIdx === idx
-                        ? "border-blue-600 bg-blue-50 scale-105"
-                        : "border-gray-200 bg-white hover:border-blue-400 hover:bg-blue-50"
-                    } ${risk.color}`}
-                    onClick={() => setExpandedIdx(idx)}
-                  >
-                    Seq {idx + 1}: {risk.level}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Show Analytics or Error */}
-            {results[expandedIdx] && (() => {
-              const res = results[expandedIdx];
-              if (!res.error) {
-                // Generate two random numbers between 1 and 9
-                const rand1 = Math.floor(Math.random() * 9) + 1;
-                const rand2 = Math.floor(Math.random() * 9) + 1;
-
-                // Add to transmission and drug_resistant, clamp between 3 and 8
-                const transmission = (Math.min(8, Math.max(3, (res.transmission ?? 0) + rand1))/10);
-                const drug_resistant = (Math.min(8, Math.max(3, (res.drug_resistant ?? 0) + rand2)))/10;
-
-                // Pass these values to Analytics
-                return <Analytics result={{ ...res, transmission, drug_resistant }} />;
-              } else {
-                return (
-                  <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
-                    <div className="flex items-center">
-                      <AlertCircle className="w-5 h-5 text-red-600 mr-2" />
-                      <span className="text-red-800 font-medium">
-                        {results[expandedIdx].error}
-                      </span>
-                    </div>
+                            {loading ? (
+                              <>
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                                <span>Analyzing Sequences...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Activity className="w-6 h-6" />
+                                <span>🚀 Analyze All Sequences</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                );
-              }
-            })()}
+                </>
+              )}
 
-            {/* Download Report & Export Data Buttons */}
-            {results[expandedIdx] && !results[expandedIdx].error && (
-              <div className="flex gap-4 mt-4">
-                <button
-                  onClick={handleDownloadReport}
-                  className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-indigo-700"
-                >
-                  Download Report
-                </button>
-                <button
-                  onClick={() => navigate("/export")}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700"
-                >
-                  Export Data
-                </button>
+              {/* Shrunk input view */}
+              {inputShrink && results.length > 0 && (
+                <div className="flex items-center justify-center py-6">
+                  <div className="text-center">
+                    <Upload className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                    <span className="text-blue-600 font-semibold">Click to expand input section</span>
+                    <div className="text-sm text-gray-500 mt-1">{sequences.length} sequences loaded</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Loading Indicator */}
+          {loading && (
+            <div className="flex flex-col items-center justify-center mb-8 bg-white/80 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/20">
+              <div className="flex items-center mb-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mr-4"></div>
+                <span className="text-blue-700 font-bold text-2xl">AI Model Processing...</span>
               </div>
-            )}
-          </div>
-        )}
+              <div className="w-full max-w-md bg-gray-200 rounded-full h-3 mb-4">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full animate-pulse" style={{width: '70%'}}></div>
+              </div>
+              <p className="text-gray-600 font-medium text-center">{processingStep}</p>
+              <div className="flex items-center space-x-2 mt-4 text-sm text-gray-500">
+                <span className="flex items-center"><div className="w-2 h-2 bg-blue-500 rounded-full mr-1 animate-pulse"></div>Deep Learning Analysis</span>
+                <span className="flex items-center"><div className="w-2 h-2 bg-purple-500 rounded-full mr-1 animate-pulse"></div>Pathogen Classification</span>
+                <span className="flex items-center"><div className="w-2 h-2 bg-cyan-500 rounded-full mr-1 animate-pulse"></div>Risk Assessment</span>
+              </div>
+            </div>
+          )}
 
-        {/* Loading Indicator */}
-        {loading && (
-          <div className="flex justify-center items-center mb-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-4 border-blue-600 mr-3"></div>
-            <span className="text-blue-700 font-semibold text-lg">Model analyzing...</span>
-          </div>
-        )}
+          {/* Error Display */}
+          {error && (
+            <div className="bg-red-50/80 backdrop-blur-lg border-2 border-red-200 rounded-2xl p-6 mb-8 shadow-lg">
+              <div className="flex items-center">
+                <AlertCircle className="w-6 h-6 text-red-600 mr-3" />
+                <span className="text-red-800 font-semibold text-lg">{error}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Results */}
+          {results.length > 0 && (
+            <div ref={analysisRef} className="space-y-8">
+              {/* Sequence Selection Buttons */}
+              <div className="bg-white/80 backdrop-blur-lg rounded-2xl mt-8 shadow-2xl p-6 border border-white/20">
+                <h3 className="text-2xl font-bold mb-6 flex items-center text-gray-800">
+                  <Target className="w-7 h-7 mr-3 text-blue-600" />
+                  Analysis Results Dashboard
+                </h3>
+                <div className="flex flex-wrap gap-4 mb-6">
+                  {results.map((res, idx) => {
+                    const risk = getRiskLevel(res.transmission ?? 0);
+                    return (
+                      <button
+                        key={idx}
+                        className={`rounded-2xl px-6 py-4 shadow-lg font-bold text-sm border-2 transition-all duration-300 transform hover:scale-105 ${
+                          expandedIdx === idx
+                            ? "border-blue-500 bg-gradient-to-r from-blue-50 to-purple-50 scale-105 shadow-2xl"
+                            : "border-gray-200 bg-white hover:border-blue-400 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50"
+                        } ${risk.color}`}
+                        onClick={() => setExpandedIdx(idx)}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <span className="text-lg">🧬</span>
+                          <div>
+                            <div>Sequence {idx + 1}</div>
+                            <div className="text-xs opacity-75">{risk.level} Risk</div>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Progress Indicator */}
+                <div className="flex items-center justify-center space-x-2 mb-4">
+                  {results.map((_, idx) => (
+                    <div
+                      key={idx}
+                      className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                        expandedIdx === idx ? 'bg-blue-500 scale-125' : 'bg-gray-300'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Show Analytics or Error */}
+              {results[expandedIdx] && (() => {
+                const res = results[expandedIdx];
+                if (!res.error) {
+                  // Generate two random numbers between 1 and 9
+                  const rand1 = Math.floor(Math.random() * 9) + 1;
+                  const rand2 = Math.floor(Math.random() * 9) + 1;
+
+                  // Add to transmission and drug_resistant, clamp between 3 and 8
+                  const transmission = (Math.min(8, Math.max(3, (res.transmission ?? 0) + rand1))/10);
+                  const drug_resistant = (Math.min(8, Math.max(3, (res.drug_resistant ?? 0) + rand2)))/10;
+
+                  // Pass these values to Analytics
+                  return <Analytics result={{ ...res, transmission, drug_resistant }} />;
+                } else {
+                  return (
+                    <div className="bg-red-50/80 backdrop-blur-lg border-2 border-red-200 rounded-2xl p-8 mb-4 shadow-lg">
+                      <div className="flex items-center justify-center">
+                        <AlertCircle className="w-8 h-8 text-red-600 mr-4" />
+                        <div>
+                          <div className="text-red-800 font-bold text-xl mb-2">Analysis Failed</div>
+                          <span className="text-red-700 font-medium">
+                            {results[expandedIdx].error}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+              })()}
+
+              {/* Action Buttons */}
+              {results[expandedIdx] && !results[expandedIdx].error && (
+                <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border border-white/20">
+                  <div className="flex flex-wrap gap-4 justify-center">
+                    <button
+                      onClick={handleDownloadReport}
+                      className="flex items-center gap-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-bold shadow-lg transform transition-all duration-200 hover:scale-105"
+                    >
+                      <Download size={20} />
+                      📄 Download Detailed Report
+                    </button>
+                    <button
+                      onClick={() => navigate("/export")}
+                      className="flex items-center gap-3 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white px-8 py-4 rounded-xl font-bold shadow-lg transform transition-all duration-200 hover:scale-105"
+                    >
+                      <Share2 size={20} />
+                      🌍 Export to Global Dashboard
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Info Cards */}
+          {!loading && results.length === 0 && sequences.length === 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+              <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20 text-center transform hover:scale-105 transition-all duration-300">
+                <div className="text-4xl mb-4">🧬</div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">Advanced Analysis</h3>
+                <p className="text-gray-600">Deep learning models analyze DNA sequences for pathogen characteristics and risk assessment.</p>
+              </div>
+              <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20 text-center transform hover:scale-105 transition-all duration-300">
+                <div className="text-4xl mb-4">📊</div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">Comprehensive Reports</h3>
+                <p className="text-gray-600">Generate detailed analytics with transmission rates, drug resistance, and mutation analysis.</p>
+              </div>
+              <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20 text-center transform hover:scale-105 transition-all duration-300">
+                <div className="text-4xl mb-4">🌍</div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">Global Integration</h3>
+                <p className="text-gray-600">Export results to the global surveillance dashboard for worldwide pathogen monitoring.</p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 }
+                  
