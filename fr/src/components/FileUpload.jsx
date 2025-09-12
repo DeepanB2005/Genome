@@ -1,65 +1,66 @@
-import { useCallback } from "react";
-import { useDropzone } from "react-dropzone";
+import { useState, useCallback } from "react";
+import { Upload } from "lucide-react";
 
-export default function FileUpload({ onSequenceSubmit }) {
-  const onDrop = useCallback(
-    (acceptedFiles) => {
-      acceptedFiles.forEach((file) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const text = reader.result;
-          onSequenceSubmit(text);
-        };
-        reader.readAsText(file);
-      });
-    },
-    [onSequenceSubmit]
-  );
+// File Upload Component with enhanced styling
+function FileUpload({ onFilesRead }) {
+  const [isDragOver, setIsDragOver] = useState(false);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: { "text/plain": [".fasta", ".fna"] },
-  });
+  const handleFiles = useCallback((files) => {
+    const readers = [];
+    const results = [];
+    let loaded = 0;
 
-  const handleManualSubmit = (e) => {
+    Array.from(files).forEach((file, idx) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        results[idx] = e.target.result;
+        loaded++;
+        if (loaded === files.length) {
+          onFilesRead(results);
+        }
+      };
+      reader.readAsText(file);
+      readers.push(reader);
+    });
+  }, [onFilesRead]);
+
+  const handleDrop = (e) => {
     e.preventDefault();
-    const text = e.target.sequence.value.trim();
-    if (text) {
-      onSequenceSubmit(text);
-      e.target.reset();
+    setIsDragOver(false);
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleFiles(files);
     }
   };
 
   return (
-    <div className="space-y-4">
-      <div
-        {...getRootProps()}
-        className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition ${
-          isDragActive ? "border-blue-500 bg-blue-50" : "border-gray-300"
-        }`}
-      >
-        <input {...getInputProps()} />
-        {isDragActive ? (
-          <p>Drop the file here...</p>
-        ) : (
-          <p>Drag & drop a .fasta/.fna file here, or click to select</p>
-        )}
+    <div
+      onDrop={handleDrop}
+      onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+      onDragLeave={() => setIsDragOver(false)}
+      className={`relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300 ${
+        isDragOver 
+          ? 'border-blue-500 bg-blue-50 scale-105' 
+          : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
+      }`}
+    >
+      <div className="flex flex-col items-center space-y-4">
+        <div className={`p-4 rounded-full ${isDragOver ? 'bg-blue-100' : 'bg-gray-100'}`}>
+          <Upload className={`w-8 h-8 ${isDragOver ? 'text-blue-600' : 'text-gray-600'}`} />
+        </div>
+        <div>
+          <p className="text-lg font-semibold text-gray-700">Drop your FASTA/FNA files here</p>
+          <p className="text-sm text-gray-500">or click to browse</p>
+        </div>
+        <input
+          type="file"
+          accept=".fasta,.fna"
+          multiple
+          onChange={(e) => handleFiles(e.target.files)}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        />
       </div>
-
-      <form onSubmit={handleManualSubmit} className="space-y-2">
-        <textarea
-          name="sequence"
-          rows="4"
-          placeholder="Or paste FNA/FASTA sequence here..."
-          className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        ></textarea>
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-        >
-          Analyze Sequence
-        </button>
-      </form>
     </div>
   );
 }
+export default FileUpload;

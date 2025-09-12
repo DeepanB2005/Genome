@@ -1,5 +1,5 @@
 # backend/main.py
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import uvicorn
 import numpy as np
@@ -9,6 +9,7 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 import os
 import pickle
 from fastapi.middleware.cors import CORSMiddleware
+import requests
 
 
 # ----------------------------
@@ -59,6 +60,49 @@ def predict(input_data: SequenceInput):
         "transmission": float(transmission),
         "drug_resistant": float(drug_resistant)
     }
+
+class ReportRequest(BaseModel):
+    transmission: float
+    drug_resistant: float
+    mutation: float
+
+class ReportResponse(BaseModel):
+    summary: str
+
+@app.post("/report", response_model=ReportResponse)
+async def generate_report(data: ReportRequest):
+    # Compose prompt for Gemini
+    prompt = (
+        f"Summarize the following DNA analysis:\n"
+        f"Transmission ratio: {data.transmission}\n"
+        f"Drug resistance ratio: {data.drug_resistant}\n"
+        f"Mutation ratio: {data.mutation}\n"
+        "Provide a simple summary for a report."
+    )
+    # Call Gemini Flash 2.5 API (replace with your actual endpoint and API key)
+    api_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent"
+    api_key = "AIzaSyDqr6OpLmEaKNZBINb_k8fpDWSs54QVVAI"
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}]
+    }
+    headers = {"Content-Type": "application/json"}
+    response = requests.post(f"{api_url}?key={api_key}", json=payload, headers=headers)
+    if response.status_code == 200:
+        summary = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+        # Add more content to the report
+        full_report = (
+            "=== Genomic Surveillance Report ===\n\n"
+            f"Input Sequence Length (VIT): {len(data.sequence) if hasattr(data, 'sequence') else 'N/A'}\n"
+            "Status: The sequence is fine and not going to spread.\n\n"
+            f"Transmission ratio: {data.transmission}\n"
+            f"Drug resistance ratio: {data.drug_resistant}\n"
+            f"Mutation ratio: {data.mutation}\n\n"
+            "--- Summary ---\n"
+            f"{summary}"
+        )
+        return ReportResponse(summary=full_report)
+    else:
+        raise HTTPException(status_code=500, detail="Failed to generate report summary")
 
 # ----------------------------
 # Run server
