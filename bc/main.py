@@ -1,5 +1,5 @@
 # backend/main.py
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 import uvicorn
 import numpy as np
@@ -10,6 +10,7 @@ import os
 import pickle
 from fastapi.middleware.cors import CORSMiddleware
 import requests
+from fastapi.responses import JSONResponse
 
 
 # ----------------------------
@@ -103,6 +104,33 @@ async def generate_report(data: ReportRequest):
         return ReportResponse(summary=full_report)
     else:
         raise HTTPException(status_code=500, detail="Failed to generate report summary")
+
+class ChatBotRequest(BaseModel):
+    prompt: str
+
+class ChatBotResponse(BaseModel):
+    reply: str
+
+@app.post("/chatbot", response_model=ChatBotResponse)
+async def chatbot_endpoint(data: ChatBotRequest):
+    prompt = (
+        f"You are an assistant for a genomic surveillance web app. "
+        f"please reply within 150 characters. if any data is missing please dont mention it cover it with available data"
+        f"Answer user questions about the analysis report, the use of the web page, or explain the results. "
+        f"User prompt: {data.prompt}"
+    )
+    api_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent"
+    api_key = "AIzaSyDqr6OpLmEaKNZBINb_k8fpDWSs54QVVAI"
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}]
+    }
+    headers = {"Content-Type": "application/json"}
+    response = requests.post(f"{api_url}?key={api_key}", json=payload, headers=headers)
+    if response.status_code == 200:
+        reply = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+        return ChatBotResponse(reply=reply)
+    else:
+        return JSONResponse(status_code=500, content={"reply": "Sorry, I couldn't get a response from Gemini."})
 
 # ----------------------------
 # Run server

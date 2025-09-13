@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import FileUpload from "./FileUpload";
 import Analytics from "./Analytics";
 import { Upload, CheckCircle2, Target, Download, Share2 } from "lucide-react";
-// ...existing code...
+import ChatBot from "./ChatBot"; // Import the ChatBot component
+
 // DNA Background Animation Component
 const DNABackground = () => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-10">
@@ -35,6 +36,14 @@ export default function DNAAnalyzer() {
   const [expandedIdx, setExpandedIdx] = useState(0);
   const [inputShrink, setInputShrink] = useState(false);
   const [processingStep, setProcessingStep] = useState('');
+  const [savedAnalytics, setSavedAnalytics] = useState(() => {
+    const saved = localStorage.getItem("savedAnalytics");
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [sequenceCache, setSequenceCache] = useState(() => {
+    const cached = localStorage.getItem("sequenceCache");
+    return cached ? JSON.parse(cached) : {};
+  });
   const analysisRef = useRef(null);
   const navigate = useNavigate();
 
@@ -68,17 +77,17 @@ export default function DNAAnalyzer() {
     setProcessingStep('Initializing analysis...');
 
     const newResults = [];
-    const sequenceCache = {};
-    
+    let updatedCache = { ...sequenceCache };
+
     for (let i = 0; i < sequences.length; i++) {
       const seq = sequences[i];
       setProcessingStep(`Analyzing sequence ${i + 1} of ${sequences.length}...`);
-      
-      if (sequenceCache[seq]) {
-        newResults.push(sequenceCache[seq]);
+
+      if (updatedCache[seq]) {
+        newResults.push(updatedCache[seq]);
         continue;
       }
-      
+
       try {
         const res = await fetch("http://localhost:8000/predict", {
           method: "POST",
@@ -88,21 +97,30 @@ export default function DNAAnalyzer() {
         let resultObj;
         if (!res.ok) {
           const err = await res.json();
-          resultObj = { error: err.detail || "Analysis failed", sequence: seq };
+          resultObj = { error: err.detail || "Analysis failed", sequence: seq, raw: seq };
         } else {
           const data = await res.json();
-          resultObj = { ...data, sequence: seq };
+          resultObj = { ...data, sequence: seq, raw: seq };
         }
-        sequenceCache[seq] = resultObj;
+        updatedCache[seq] = resultObj;
         newResults.push(resultObj);
       } catch (e) {
-        const errorObj = { error: e.message, sequence: seq };
-        sequenceCache[seq] = errorObj;
+        const errorObj = { error: e.message, sequence: seq, raw: seq };
+        updatedCache[seq] = errorObj;
         newResults.push(errorObj);
       }
     }
 
     setResults(newResults);
+    setSequenceCache(updatedCache);
+    
+    // Replace localStorage.setItem with a try/catch to avoid crashing
+    try {
+      localStorage.setItem("sequenceCache", JSON.stringify(updatedCache));
+    } catch (e) {
+      console.warn("localStorage quota exceeded, falling back to session only.");
+    }
+
     setLoading(false);
     setProcessingStep('');
   };
@@ -120,7 +138,7 @@ export default function DNAAnalyzer() {
     const rand1 = Math.floor(Math.random() * 9) + 1;
     const rand2 = Math.floor(Math.random() * 9) + 1;
     const transmission = Math.min(8, Math.max(3, (res.transmission ?? 0) + rand1)) / 10;
-    const drug_resistant = Math.min(8, Math.max(3, (res.drug_resistant ?? 0) + rand2)) / 10;
+    const drug_resistant = Math.min(7.45, Math.max(3, (res.drug_resistant ?? 0) + rand2)) / 10;
     const mutation = (transmission + drug_resistant + 0.1) / 2;
     const sequence = results[expandedIdx].sequence;
 
@@ -148,6 +166,32 @@ export default function DNAAnalyzer() {
     }
   };
 
+  // Save analytics to localStorage
+  useEffect(() => {
+    if (results.length > 0) {
+      // Save analytics for each sequence in localStorage
+      const analyticsToSave = {};
+      results.forEach((res, idx) => {
+        if (!res.error) {
+          // Use the same randomization logic as in Analytics rendering
+          const rand1 = Math.floor(Math.random() * 9) + 1;
+          const rand2 = Math.floor(Math.random() * 9) + 1;
+          const transmission = (Math.min(8, Math.max(3, (res.transmission ?? 0) + rand1)))/10;
+          const drug_resistant = (Math.min(8, Math.max(3, (res.drug_resistant ?? 0) + rand2)))/10;
+          analyticsToSave[idx] = { ...res, transmission, drug_resistant };
+        }
+      });
+      setSavedAnalytics(analyticsToSave);
+      
+      // Same for savedAnalytics:
+      try {
+        localStorage.setItem("savedAnalytics", JSON.stringify(analyticsToSave));
+      } catch (e) {
+        console.warn("localStorage quota exceeded, falling back to session only.");
+      }
+    }
+  }, [results]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 relative">
       <DNABackground />
@@ -161,7 +205,7 @@ export default function DNAAnalyzer() {
               🧬 DNA Sequence Analyzer
             </h1>
             <p className="text-xl md:text-xl text-gray-700 max-w-4xl mx-auto leading-relaxed">
-              Advanced pathogen genomics analysis platform powered by machine learning. 
+              Advanced pathogen genomics analysis of pathogens like <div class="flex justify-center"><p class="bg-red-500 font-bold bg-clip-text text-transparent">Maleria ,</p><p class="bg-blue-500 font-bold bg-clip-text text-transparent">Diarrhea ,</p><p class="bg-orange-500 font-bold bg-clip-text text-transparent">SARS COV 2</p></div>
               Upload multiple DNA sequences and get comprehensive risk assessments.
             </p>
           </div>
@@ -342,16 +386,8 @@ export default function DNAAnalyzer() {
               {results[expandedIdx] && (() => {
                 const res = results[expandedIdx];
                 if (!res.error) {
-                  // Generate two random numbers between 1 and 9
-                  const rand1 = Math.floor(Math.random() * 9) + 1;
-                  const rand2 = Math.floor(Math.random() * 9) + 1;
-
-                  // Add to transmission and drug_resistant, clamp between 3 and 8
-                  const transmission = (Math.min(8, Math.max(3, (res.transmission ?? 0) + rand1))/10);
-                  const drug_resistant = (Math.min(8, Math.max(3, (res.drug_resistant ?? 0) + rand2)))/10;
-
-                  // Pass these values to Analytics
-                  return <Analytics result={{ ...res, transmission, drug_resistant }} />;
+                  const analytics = savedAnalytics[expandedIdx] || res;
+                  return <Analytics result={analytics} />;
                 } else {
                   return (
                     <div className="bg-red-50/80 backdrop-blur-lg border-2 border-red-200 rounded-2xl p-8 mb-4 shadow-lg">
@@ -414,8 +450,10 @@ export default function DNAAnalyzer() {
             </div>
           )}
         </div>
+        
+        {/* ChatBot floating widget */}
+        <ChatBot analysisResult={results[expandedIdx]} />
       </div>
     </div>
   );
 }
-                  
