@@ -10,7 +10,7 @@ import os
 import pickle
 from fastapi.middleware.cors import CORSMiddleware
 import requests
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 
 
 # ----------------------------
@@ -131,6 +131,15 @@ async def chatbot_endpoint(data: ChatBotRequest):
         return ChatBotResponse(reply=reply)
     else:
         return JSONResponse(status_code=500, content={"reply": "Sorry, I couldn't get a response from Gemini."})
+
+@app.get("/sample/{filename}", response_class=PlainTextResponse)
+async def get_sample_file(filename: str):
+    try:
+        sample_path = os.path.join("sample", filename)
+        with open(sample_path, "r") as f:
+            return f.read()
+    except:
+        raise HTTPException(status_code=404, detail="Sample file not found")
 
 # ----------------------------
 # Run server

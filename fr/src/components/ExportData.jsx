@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, PieChart, Pie, Cell, LineChart, Line, ResponsiveContainer } from "recharts";
 import { MapPin, Search, Globe, Activity, Shield, Zap, TrendingUp, Download, Settings, Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function ExportData() {
   const [coords, setCoords] = useState(null);
@@ -13,6 +14,7 @@ export default function ExportData() {
   const [activeTab, setActiveTab] = useState('overview');
   const [isLoading, setIsLoading] = useState(false);
   const mapRef = useRef(null);
+  const navigate = useNavigate();
 
   // Enhanced analytics data with trend information
   const analytics = {
@@ -280,7 +282,7 @@ export default function ExportData() {
             {/* Stats Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {barData.map((item, idx) => (
-                <div key={idx} className="bg-white/80 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-white/20 transform hover:scale-105 transition-all duration-200">
+                <div key={idx} className="bg-white backdrop-blur-lg rounded-xl p-6 shadow-lg border border-white/20 transform hover:scale-105 transition-all duration-200">
                   <div className="text-3xl mb-2">{item.icon}</div>
                   <div className="text-2xl font-bold" style={{ color: item.color }}>
                     {(item.value * 100).toFixed(1)}%
@@ -300,7 +302,7 @@ export default function ExportData() {
             </div>
 
             {/* Trend Chart */}
-            <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg p-6 border border-white/20">
+            <div className="bg-gradient-to-l from-violet-100 to-yellow-100 backdrop-blur-lg rounded-xl shadow-lg p-6 border border-white/20">
               <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <TrendingUp className="text-blue-600" size={24} />
                 6-Month Trend Analysis
@@ -322,7 +324,7 @@ export default function ExportData() {
           {/* Detailed Analytics */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Bar Chart */}
-            <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg p-6 border border-white/20">
+            <div className="bg-gradient-to-l from-red-100 to-blue-100 backdrop-blur-lg rounded-xl shadow-lg p-6 border border-white/20">
               <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                 <Activity className="text-green-600" size={28} />
                 Pathogen Analytics Results
@@ -343,7 +345,7 @@ export default function ExportData() {
             </div>
 
             {/* Pie Chart */}
-            <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg p-6 border border-white/20">
+            <div className="bg-gradient-to-r from-blue-100 to-green-100 backdrop-blur-lg rounded-xl shadow-lg p-6 border border-white/20">
               <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                 <Eye className="text-purple-600" size={28} />
                 Distribution Overview
@@ -370,7 +372,7 @@ export default function ExportData() {
           </div>
 
           {/* Summary Section */}
-          <div className="mt-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 border border-blue-200">
+          <div className="mt-8 bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl p-8 border border-blue-200">
             <div className="flex items-center gap-3 mb-4">
               <Shield className="text-blue-600" size={32} />
               <h2 className="text-2xl font-bold text-gray-800">Analysis Summary</h2>
@@ -397,6 +399,16 @@ export default function ExportData() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Navigation Button */}
+      <div className="absolute top-4 left-4">
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transform transition-all duration-200 hover:scale-105"
+        >
+          ← Back to Analysis
+        </button>
       </div>
     </div>
   );

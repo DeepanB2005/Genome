@@ -22,15 +22,35 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+// Custom Tooltip Component
+function CustomTooltip({ active, payload, label }) {
+  if (active && payload && payload.length) {
+    const color = payload[0].color || payload[0].payload.color;
+    return (
+      <div
+        className="p-2 rounded-lg shadow-lg"
+        style={{ background: "#fff", border: `2px solid ${color}`, color: color }}
+      >
+        <div className="font-bold">{label}</div>
+        <div>
+          Value: <span style={{ color }}>{payload[0].value}</span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
 
 // Enhanced Analytics Component
 function Analytics({ result }) {
+  const [fixedAnalytics, setFixedAnalytics] = useState(null);
+
   if (!result) return null;
 
   const mutation = (result.transmission + result.drug_resistant + 0.1) / 2;
   
   const barData = [
-    { name: "Transmission", value: result.transmission, color: "#ff6b6b", icon: "🦠" },
+    { name: "Transmission", value: result.transmission, color: "#FF0000", icon: "🦠" },
     { name: "Drug Resistance", value: result.drug_resistant, color: "#ffa726", icon: "🛡️" },
     { name: "Mutation", value: mutation, color: "#66bb6a", icon: "🧬" },
   ];
@@ -60,9 +80,10 @@ function Analytics({ result }) {
     if (value < 0.7) return { level: 'Medium', color: 'text-yellow-600', bg: 'bg-yellow-100', border: 'border-yellow-200' };
     return { level: 'High', color: 'text-red-600', bg: 'bg-red-100', border: 'border-red-200' };
   };
+  
 
   return (
-    <div className="mt-8 space-y-8">
+    <div className="mt-8 space-y-8 font-ti">
       <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white/20">
         <h3 className="text-3xl font-bold mb-8 flex items-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           <BarChart3 className="w-8 h-8 mr-3 text-blue-600" />
@@ -86,7 +107,7 @@ function Analytics({ result }) {
                       <Icon className="w-6 h-6 text-blue-600" />
                     </div>
                     <div>
-                      <div className="font-bold text-gray-800">{metric.label}</div>
+                      <div className="font-bold text-gray-80">{metric.label}</div>
                       <div className="text-xs text-gray-500">{metric.desc}</div>
                     </div>
                   </div>
@@ -112,7 +133,7 @@ function Analytics({ result }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Bar Chart */}
           <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-200">
-            <h4 className="text-xl font-bold mb-6 flex items-center text-gray-800">
+            <h4 className="text-xl font-bold mb-6 flex items-center text-gray-80">
               <Target className="w-5 h-5 mr-2 text-blue-600" />
               Risk Factor Analysis
             </h4>
@@ -122,13 +143,7 @@ function Analytics({ result }) {
                 <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'rgba(17, 24, 39, 0.9)', 
-                    border: 'none', 
-                    borderRadius: '12px',
-                    color: 'white',
-                    backdropFilter: 'blur(10px)'
-                  }}
+                  content={<CustomTooltip />}
                 />
                 <Bar dataKey="value" radius={[8, 8, 0, 0]}>
                   {barData.map((entry, index) => (
@@ -160,13 +175,7 @@ function Analytics({ result }) {
                   ))}
                 </Pie>
                 <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'rgba(17, 24, 39, 0.9)', 
-                    border: 'none', 
-                    borderRadius: '12px',
-                    color: 'white',
-                    backdropFilter: 'blur(10px)'
-                  }}
+                  content={<CustomTooltip />}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -241,20 +250,21 @@ function Analytics({ result }) {
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="bg-white/70 rounded-xl p-4">
-              <h5 className="font-semibold text-gray-800 mb-2">🦠 Transmission Analysis</h5>
+              <h5 className="font-semibold text-gray-80 mb-2">🦠 Transmission Analysis</h5>
               <p className="text-gray-700 text-sm">Current transmission rate of {(result.transmission * 100).toFixed(1)}% indicates {getRiskLevel(result.transmission).level.toLowerCase()} spreading potential.</p>
             </div>
             <div className="bg-white/70 rounded-xl p-4">
-              <h5 className="font-semibold text-gray-800 mb-2">🛡️ Resistance Profile</h5>
+              <h5 className="font-semibold text-gray-80 mb-2">🛡️ Resistance Profile</h5>
               <p className="text-gray-700 text-sm">Drug resistance at {(result.drug_resistant * 100).toFixed(1)}% suggests {getRiskLevel(result.drug_resistant).level.toLowerCase()} treatment challenges.</p>
             </div>
             <div className="bg-white/70 rounded-xl p-4">
-              <h5 className="font-semibold text-gray-800 mb-2">🧬 Mutation Dynamics</h5>
+              <h5 className="font-semibold text-gray-00 mb-2">🧬 Mutation Dynamics</h5>
               <p className="text-gray-700 text-sm">Mutation rate of {(mutation * 100).toFixed(1)}% indicates {getRiskLevel(mutation).level.toLowerCase()} genetic variation speed.</p>
             </div>
           </div>
         </div>
       </div>
+      {fixedAnalytics && <Analytics result={fixedAnalytics} />}
     </div>
   );
 }

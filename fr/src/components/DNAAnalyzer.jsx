@@ -4,30 +4,75 @@ import { useNavigate } from "react-router-dom";
 import FileUpload from "./FileUpload";
 import Analytics from "./Analytics";
 import { Upload, CheckCircle2, Target, Download, Share2 } from "lucide-react";
-import ChatBot from "./ChatBot"; // Import the ChatBot component
+import ChatBot from "./ChatBot";
 
 // DNA Background Animation Component
 const DNABackground = () => (
-  <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-10">
+  <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-20">
+    {/* Moving DNA strands */}
     <div className="absolute inset-0">
       {[...Array(25)].map((_, i) => (
         <div
           key={i}
-          className="absolute w-1 bg-gradient-to-b from-blue-400 via-purple-500 to-cyan-400 animate-pulse"
+          className="absolute w-1 bg-gradient-to-b from-blue-400 via-purple-500 to-cyan-400"
           style={{
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,
             height: `${Math.random() * 150 + 50}px`,
-            animationDelay: `${Math.random() * 3}s`,
-            transform: `rotate(${Math.random() * 360}deg)`,
-            animationDuration: `${Math.random() * 2 + 1}s`
+            animation: `dnaMove ${Math.random() * 8 + 8}s linear infinite`,
+            animationDelay: `${Math.random() * 4}s`,
+            transform: `rotate(${Math.random() * 360}deg)`
           }}
         />
       ))}
     </div>
-    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-cyan-50/30" />
+
+    {/* Fixed DNA icons with pulse effect */}
+    <div className="absolute inset-0">
+      {[...Array(8)].map((_, i) => (
+        <div
+          key={`dna-${i}`}
+          className="absolute"
+          style={{
+            left: `${(i * 15) + 5}%`,
+            top: `${Math.random() * 80 + 10}%`,
+          }}
+        >
+          <div className="relative">
+            <div className="text-4xl transform -rotate-45 animate-pulse">🧬</div>
+            <div 
+              className="absolute inset-0 bg-blue-400/20 rounded-full blur-xl animate-ping"
+              style={{
+                animation: `ping ${2 + i}s cubic-bezier(0, 0, 0.2, 1) infinite`
+              }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* Gradient overlay */}
+    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-400 via-purple-50/20 to-green-500" />
+    
+    {/* Animations */}
+    <style>
+      {`
+        @keyframes dnaMove {
+          0% { transform: translateY(0) scaleY(1) rotate(0deg); opacity: 0.7; }
+          50% { transform: translateY(30px) scaleY(1.1) rotate(10deg); opacity: 1; }
+          100% { transform: translateY(0) scaleY(1) rotate(0deg); opacity: 0.7; }
+        }
+        @keyframes ping {
+          75%, 100% {
+            transform: scale(2);
+            opacity: 0;
+          }
+        }
+      `}
+    </style>
   </div>
 );
+
 export default function DNAAnalyzer() {
   const [sequences, setSequences] = useState([]);
   const [results, setResults] = useState([]);
@@ -36,6 +81,8 @@ export default function DNAAnalyzer() {
   const [expandedIdx, setExpandedIdx] = useState(0);
   const [inputShrink, setInputShrink] = useState(false);
   const [processingStep, setProcessingStep] = useState('');
+  const [showSamples, setShowSamples] = useState(false);
+  const [sampleContent, setSampleContent] = useState("");
   const [savedAnalytics, setSavedAnalytics] = useState(() => {
     const saved = localStorage.getItem("savedAnalytics");
     return saved ? JSON.parse(saved) : {};
@@ -75,6 +122,14 @@ export default function DNAAnalyzer() {
     setError("");
     setInputShrink(true);
     setProcessingStep('Initializing analysis...');
+
+    // Add artificial delay steps
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setProcessingStep('Processing DNA sequences...');
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setProcessingStep('Running deep learning model...');
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setProcessingStep('Finalizing results...');
 
     const newResults = [];
     let updatedCache = { ...sequenceCache };
@@ -176,9 +231,11 @@ export default function DNAAnalyzer() {
           // Use the same randomization logic as in Analytics rendering
           const rand1 = Math.floor(Math.random() * 9) + 1;
           const rand2 = Math.floor(Math.random() * 9) + 1;
-          const transmission = (Math.min(8, Math.max(3, (res.transmission ?? 0) + rand1)))/10;
-          const drug_resistant = (Math.min(8, Math.max(3, (res.drug_resistant ?? 0) + rand2)))/10;
-          analyticsToSave[idx] = { ...res, transmission, drug_resistant };
+          // Replace this line in DNAAnalyzer.jsx (and similar logic for drug_resistant):
+
+    const transmission = parseFloat(Math.min(8, Math.max(3, (res.transmission ?? 0) + rand1)) / 10);
+    const drug_resistant = parseFloat(Math.min(7.45, Math.max(3, (res.drug_resistant ?? 0) + rand2)) / 10);
+analyticsToSave[idx] = { ...res, transmission, drug_resistant };
         }
       });
       setSavedAnalytics(analyticsToSave);
@@ -192,20 +249,37 @@ export default function DNAAnalyzer() {
     }
   }, [results]);
 
+  // Add this function in DNAAnalyzer component
+  const handleViewSample = async (filename) => {
+    try {
+      const response = await fetch(`http://localhost:8000/sample/${filename}`);
+      const content = await response.text();
+      setSampleContent(content);
+    } catch (error) {
+      console.error('Error loading sample:', error);
+      setSampleContent("Error loading sample file");
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 relative">
+    <div className="font-ti min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 relative">
       <DNABackground />
       
-      <div className="relative z-10 py-4">
-        <div className="max-w-7xl mx-auto px-6">
+      <div className="relative z-10 py-3">
+        <div className="max-w-6xl mx-auto px-6">
           {/* Header */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-3">
             
-            <h1 className="text-5xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent mb-1">
+            <h1 className="font-ti  text-5xl md:text-5xl font-bold bg-gradient-to-r from-green-600 via-red-500 to-purple-600 bg-clip-text text-transparent mb-1">
               🧬 DNA Sequence Analyzer
             </h1>
             <p className="text-xl md:text-xl text-gray-700 max-w-4xl mx-auto leading-relaxed">
-              Advanced pathogen genomics analysis of pathogens like <div class="flex justify-center"><p class="bg-red-500 font-bold bg-clip-text text-transparent">Maleria ,</p><p class="bg-blue-500 font-bold bg-clip-text text-transparent">Diarrhea ,</p><p class="bg-orange-500 font-bold bg-clip-text text-transparent">SARS COV 2</p></div>
+              Advanced pathogen genomics analysis of pathogens like
+              <span className="flex justify-center gap-2">
+                <span className="bg-red-500 font-bold bg-clip-text text-transparent">Maleria,</span>
+                <span className="bg-blue-500 font-bold bg-clip-text text-transparent">Diarrhea,</span>
+                <span className="bg-orange-500 font-bold bg-clip-text text-transparent">SARS COV 2</span>
+              </span>
               Upload multiple DNA sequences and get comprehensive risk assessments.
             </p>
           </div>
@@ -221,16 +295,17 @@ export default function DNAAnalyzer() {
           >
             <div
               className={`bg-gradient-to-l from-red-50 to bg-purple-50 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 transition-all duration-500 ${
-                inputShrink && results.length > 0 ? "p-6" : "p-8 pt-6"
+                inputShrink && results.length > 0 ? "p-6" : "p-8 pb-2 pt-6"
               }`}
             >
               <h2
                 className={`font-bold flex items-center ${
                   inputShrink && results.length > 0 ? "text-xl mb-4" : "text-3xl mb-8"
-                } text-gray-800`}
+                } text-gray-700`}
               >
                 <Upload className={`mr-3 text-blue-600 ${inputShrink ? 'w-6 h-6' : 'w-8 h-8'}`} />
-                DNA Sequence Input Portal
+                DNA Sequence Input Portal   🧬
+                <span className="ml-100 bg-gradient-to-r from-red-300 to-green-300 text-transparent bg-clip-text">(ATGC...)</span>
               </h2>
 
               {/* File Upload */}
@@ -308,7 +383,7 @@ export default function DNAAnalyzer() {
 
           {/* Loading Indicator */}
           {loading && (
-            <div className="flex flex-col items-center justify-center mb-8 bg-white/80 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/20">
+            <div className="flex flex-col items-center justify-center mb-8 mt-10 bg-gradient-to-l from-red-100 to-blue-100 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/20">
               <div className="flex items-center mb-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mr-4"></div>
                 <span className="text-blue-700 font-bold text-2xl">AI Model Processing...</span>
@@ -361,7 +436,6 @@ export default function DNAAnalyzer() {
                           <span className="text-lg">🧬</span>
                           <div>
                             <div>Sequence {idx + 1}</div>
-                            <div className="text-xs opacity-75">{risk.level} Risk</div>
                           </div>
                         </div>
                       </button>
@@ -431,20 +505,20 @@ export default function DNAAnalyzer() {
 
           {/* Info Cards */}
           {!loading && results.length === 0 && sequences.length === 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
               <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20 text-center transform hover:scale-105 transition-all duration-300">
                 <div className="text-4xl mb-4">🧬</div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">Advanced Analysis</h3>
+                <h3 className="text-xl font-bold bg-gradient-to-r from-red-500 to-yellow-400 bg-clip-text text-transparent mb-2">Advanced Analysis</h3>
                 <p className="text-gray-600">Deep learning models analyze DNA sequences for pathogen characteristics and risk assessment.</p>
               </div>
               <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20 text-center transform hover:scale-105 transition-all duration-300">
                 <div className="text-4xl mb-4">📊</div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">Comprehensive Reports</h3>
+                <h3 className="text-xl font-bold text-gray-800 mb-2 bg-gradient-to-r from-yellow-500 to-green-400 bg-clip-text text-transparent">Comprehensive Reports</h3>
                 <p className="text-gray-600">Generate detailed analytics with transmission rates, drug resistance, and mutation analysis.</p>
               </div>
               <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20 text-center transform hover:scale-105 transition-all duration-300">
                 <div className="text-4xl mb-4">🌍</div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">Global Integration</h3>
+                <h3 className="text-xl font-bold text-gray-800 mb-2 bg-gradient-to-r from-green-500 to-violet-400 bg-clip-text text-transparent">Global Integration</h3>
                 <p className="text-gray-600">Export results to the global surveillance dashboard for worldwide pathogen monitoring.</p>
               </div>
             </div>
