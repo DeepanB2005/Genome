@@ -402,7 +402,7 @@ export default function ExportData() {
       </div>
 
       {/* Navigation Button */}
-      <div className="absolute top-4 left-4">
+      <div className="absolute top-4 left-4 z-50">
         <button
           onClick={() => navigate("/")}
           className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transform transition-all duration-200 hover:scale-105"
