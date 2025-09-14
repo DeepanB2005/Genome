@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+numpy
+tensorflow
+requests
+pydantic
+python-multipart
+starlette
+scikit-learn
