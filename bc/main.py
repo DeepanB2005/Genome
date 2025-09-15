@@ -18,7 +18,6 @@ import google.generativeai as genai
 api_key = os.getenv("api_key")
 genai.configure(api_key=api_key)
 
-# ----------------------------
 # Load Model
 # ----------------------------
 MODEL_PATH = "models/dna_model.h5"
