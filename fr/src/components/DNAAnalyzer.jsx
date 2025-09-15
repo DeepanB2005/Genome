@@ -5,6 +5,8 @@ import FileUpload from "./FileUpload";
 import Analytics from "./Analytics";
 import { Upload, CheckCircle2, Target, Download, Share2 } from "lucide-react";
 import ChatBot from "./ChatBot";
+import { API_BASE_URL } from "./config";  // add this at top
+
 
 // DNA Background Animation Component
 const DNABackground = () => (
@@ -144,7 +146,7 @@ export default function DNAAnalyzer() {
       }
 
       try {
-        const res = await fetch("http://localhost:8000/predict", {
+        const res = await fetch(`${API_BASE_URL}/predict`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ sequence: seq }),
@@ -198,7 +200,7 @@ export default function DNAAnalyzer() {
     const sequence = results[expandedIdx].sequence;
 
     try {
-      const reportRes = await fetch("http://localhost:8000/report", {
+      const reportRes = await fetch(`${API_BASE_URL}/report`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -252,7 +254,7 @@ analyticsToSave[idx] = { ...res, transmission, drug_resistant };
   // Add this function in DNAAnalyzer component
   const handleViewSample = async (filename) => {
     try {
-      const response = await fetch(`http://localhost:8000/sample/${filename}`);
+      const response = await fetch(`${API_BASE_URL}/sample/${filename}`);
       const content = await response.text();
       setSampleContent(content);
     } catch (error) {

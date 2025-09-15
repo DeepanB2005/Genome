@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import { API_BASE_URL } from "./config";  // add this at top
+
 
 export default function ChatBot({ analysisResult }) {
   const [messages, setMessages] = useState([
@@ -27,7 +29,7 @@ export default function ChatBot({ analysisResult }) {
     }
 
     try {
-      const res = await fetch("http://localhost:8000/chatbot", {
+      const res = await fetch(`${API_BASE_URL}/chatbot`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),

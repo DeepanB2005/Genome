@@ -48,7 +48,9 @@ function FileUpload({ onFilesRead }) {
     const sampleContents = {
       'maleria_1.txt': '>Malaria_Sample_1\nATCGTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTA\n',
       'maleria_2.txt': '>Malaria_Sample_2\nTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCT\n',
-      'maleria_3.txt': '>Malaria_Sample_3\nGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAG\n'
+      'maleria_3.txt': '>Malaria_Sample_3\nGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAG\n',
+      'maleria_4.txt': '>Malaria_Sample_4\nCGTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTA\n',
+      'maleria_5.txt': '>Malaria_Sample_5\nTACGTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGC\n'
     };
     setSampleContent(sampleContents[sample] || '');
   };
@@ -138,6 +140,18 @@ function FileUpload({ onFilesRead }) {
                     className="block w-full text-left px-4 py-2 rounded-lg hover:bg-blue-50 text-sm text-gray-700"
                   >
                     🦠 Malaria Sample 3
+                  </button>
+                  <button
+                    onClick={() => handleViewSample('maleria_4.txt')}
+                    className="block w-full text-left px-4 py-2 rounded-lg hover:bg-blue-50 text-sm text-gray-700"
+                  >
+                    🦠 Malaria Sample 4
+                  </button>
+                  <button
+                    onClick={() => handleViewSample('maleria_5.txt')}
+                    className="block w-full text-left px-4 py-2 rounded-lg hover:bg-blue-50 text-sm text-gray-700"
+                  >
+                    🦠 Malaria Sample 5
                   </button>
                 </div>
                 

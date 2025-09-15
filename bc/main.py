@@ -11,7 +11,12 @@ import pickle
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 from fastapi.responses import JSONResponse, PlainTextResponse
+from dotenv import load_dotenv
+load_dotenv()
+import google.generativeai as genai
 
+api_key = os.getenv("api_key")
+genai.configure(api_key=api_key)
 
 # ----------------------------
 # Load Model
@@ -19,7 +24,7 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 MODEL_PATH = "models/dna_model.h5"
 model = tf.keras.models.load_model(MODEL_PATH, compile=False)
 
-# The tokenizer must be the same used during training
+# The tokenizer must be in the same used during training
 # Re-create and fit on the same vocabulary
 # (you need the sequences used in training or save tokenizer separately)
 # ----------------------------
@@ -37,7 +42,7 @@ app = FastAPI(title="Genomic Prediction API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],  # Add your frontend URLs
+    allow_origins=["http://localhost:3000", "http://localhost:5173","https://genomicsurviellance.vercel.app",],  # Add your frontend URLs
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -63,6 +68,7 @@ def predict(input_data: SequenceInput):
     }
 
 class ReportRequest(BaseModel):
+    sequence: str | None = None
     transmission: float
     drug_resistant: float
     mutation: float
@@ -72,7 +78,6 @@ class ReportResponse(BaseModel):
 
 @app.post("/report", response_model=ReportResponse)
 async def generate_report(data: ReportRequest):
-    # Compose prompt for Gemini
     prompt = (
         f"Summarize the following DNA analysis:\n"
         f"Transmission ratio: {data.transmission}\n"
@@ -80,30 +85,20 @@ async def generate_report(data: ReportRequest):
         f"Mutation ratio: {data.mutation}\n"
         "Provide a simple summary for a report."
     )
-    # Call Gemini Flash 2.5 API (replace with your actual endpoint and API key)
-    api_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent"
-    api_key = "AIzaSyDqr6OpLmEaKNZBINb_k8fpDWSs54QVVAI"
-    payload = {
-        "contents": [{"parts": [{"text": prompt}]}]
-    }
-    headers = {"Content-Type": "application/json"}
-    response = requests.post(f"{api_url}?key={api_key}", json=payload, headers=headers)
-    if response.status_code == 200:
-        summary = response.json()["candidates"][0]["content"]["parts"][0]["text"]
-        # Add more content to the report
-        full_report = (
-            "=== Genomic Surveillance Report ===\n\n"
-            f"Input Sequence Length (VIT): {len(data.sequence) if hasattr(data, 'sequence') else 'N/A'}\n"
-            "Status: The sequence is fine and not going to spread.\n\n"
-            f"Transmission ratio: {data.transmission}\n"
-            f"Drug resistance ratio: {data.drug_resistant}\n"
-            f"Mutation ratio: {data.mutation}\n\n"
-            "--- Summary ---\n"
-            f"{summary}"
-        )
-        return ReportResponse(summary=full_report)
-    else:
-        raise HTTPException(status_code=500, detail="Failed to generate report summary")
+    model = genai.GenerativeModel("gemini-2.5-pro")
+    response = model.generate_content(prompt)
+    summary = response.text
+    full_report = (
+        "=== Genomic Surveillance Report ===\n\n"
+        f"Input Sequence Length (VIT): {len(data.sequence) if hasattr(data, 'sequence') else 'N/A'}\n"
+        "Status: The sequence is fine and not going to spread.\n\n"
+        f"Transmission ratio: {data.transmission}\n"
+        f"Drug resistance ratio: {data.drug_resistant}\n"
+        f"Mutation ratio: {data.mutation}\n\n"
+        "--- Summary ---\n"
+        f"{summary}"
+    )
+    return ReportResponse(summary=full_report)
 
 class ChatBotRequest(BaseModel):
     prompt: str
@@ -119,18 +114,10 @@ async def chatbot_endpoint(data: ChatBotRequest):
         f"Answer user questions about the analysis report, the use of the web page, or explain the results. "
         f"User prompt: {data.prompt}"
     )
-    api_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent"
-    api_key = "AIzaSyDqr6OpLmEaKNZBINb_k8fpDWSs54QVVAI"
-    payload = {
-        "contents": [{"parts": [{"text": prompt}]}]
-    }
-    headers = {"Content-Type": "application/json"}
-    response = requests.post(f"{api_url}?key={api_key}", json=payload, headers=headers)
-    if response.status_code == 200:
-        reply = response.json()["candidates"][0]["content"]["parts"][0]["text"]
-        return ChatBotResponse(reply=reply)
-    else:
-        return JSONResponse(status_code=500, content={"reply": "Sorry, I couldn't get a response from Gemini."})
+    model = genai.GenerativeModel("gemini-2.5-pro")
+    response = model.generate_content(prompt)
+    reply = response.text
+    return ChatBotResponse(reply=reply)
 
 @app.get("/sample/{filename}", response_class=PlainTextResponse)
 async def get_sample_file(filename: str):
