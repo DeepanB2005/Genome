@@ -90,11 +90,16 @@ async def generate_report(data: ReportRequest):
         "Provide a simple summary for a report."
     )
     model = genai.GenerativeModel("gemini-2.5-pro")
-    response = model.generate_content(prompt)
-    summary = response.text
+    try:
+        response = model.generate_content(prompt)
+        summary = getattr(response, "text", "No summary generated.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gemini API error: {str(e)}")
+
+    seq_length = len(data.sequence) if data.sequence else "N/A"
     full_report = (
         "=== Genomic Surveillance Report ===\n\n"
-        f"Input Sequence Length (VIT): {len(data.sequence) if hasattr(data, 'sequence') else 'N/A'}\n"
+        f"Input Sequence Length (VIT): {seq_length}\n"
         "Status: The sequence is fine and not going to spread.\n\n"
         f"Transmission ratio: {data.transmission}\n"
         f"Drug resistance ratio: {data.drug_resistant}\n"
@@ -102,6 +107,7 @@ async def generate_report(data: ReportRequest):
         "--- Summary ---\n"
         f"{summary}"
     )
+
     return ReportResponse(summary=full_report)
 
 class ChatBotRequest(BaseModel):
