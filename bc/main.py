@@ -131,6 +131,9 @@ async def get_sample_file(filename: str):
             return f.read()
     except:
         raise HTTPException(status_code=404, detail="Sample file not found")
+@app.get("/")
+async def root():
+    return {"status": "Genomic API is running"}
 
 # ----------------------------
 # Run server
