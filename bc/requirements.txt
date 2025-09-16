@@ -6,5 +6,5 @@ requests
 pydantic
 python-multipart
 starlette
-google-genai
 python-dotenv
+google-generativeai

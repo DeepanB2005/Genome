@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { Upload } from "lucide-react";
 
-const API_URL = import.meta.env.VITE_BCAPI || "https://genome-ytvz.onrender.com";
+const API_URL = "http://127.0.0.1:8000" || "https://genome-ytvz.onrender.com";
 
 // Enhanced File Upload Component
 function FileUpload({ onFilesRead }) {
