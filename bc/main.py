@@ -132,11 +132,13 @@ async def chatbot_endpoint(data: ChatBotRequest):
 @app.get("/sample/{filename}", response_class=PlainTextResponse)
 async def get_sample_file(filename: str):
     try:
-        sample_path = os.path.join("sample", filename)
+        base_dir = os.path.dirname(__file__)  # directory where main.py lives (bc/)
+        sample_path = os.path.join(base_dir, "sample", filename)
         with open(sample_path, "r") as f:
             return f.read()
-    except:
+    except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Sample file not found")
+
 @app.get("/")
 async def root():
     return {"status": "Genomic API is running"}
