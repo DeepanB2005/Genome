@@ -11,8 +11,12 @@ import pickle
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 from fastapi.responses import JSONResponse, PlainTextResponse
-from dotenv import load_dotenv
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()  # only works locally with a .env file
+except ModuleNotFoundError:
+    pass  # skip on Render
+
 import google.generativeai as genai
 
 api_key = os.getenv("api_key")

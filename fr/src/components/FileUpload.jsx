@@ -1,6 +1,8 @@
 import React, { useState, useCallback } from "react";
 import { Upload } from "lucide-react";
 
+const API_URL = import.meta.env.VITE_BCAPI || "https://genome-ytvz.onrender.com";
+
 // Enhanced File Upload Component
 function FileUpload({ onFilesRead }) {
   const [isDragOver, setIsDragOver] = useState(false);
@@ -45,7 +47,7 @@ function FileUpload({ onFilesRead }) {
 
   const handleViewSample = async (filename) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/sample/${filename}`);
+      const response = await fetch(`${API_URL}/sample/${filename}`);
       const content = await response.text();
       setSampleContent(content);
     } catch (error) {
@@ -142,7 +144,7 @@ function FileUpload({ onFilesRead }) {
                   
                 </div>
                 
-                {sampleContent && (
+                {sampleContent && sampleContent !== "Error loading sample file" ? (
                   <div className="bg-gray-50 rounded-lg p-4">
                     <h4 className="font-semibold text-gray-700 mb-2">Sample Content:</h4>
                     <code className="text-xs text-gray-600 font-mono break-all block max-h-40 overflow-y-auto">
@@ -150,7 +152,7 @@ function FileUpload({ onFilesRead }) {
                     </code>
                     <button
                       onClick={() => {
-                        onFilesRead([sampleContent]); // Send the sample content to parent
+                        onFilesRead([sampleContent]);
                         setShowSamples(false);
                         setSequences([sampleContent]);
                       }}
@@ -159,7 +161,9 @@ function FileUpload({ onFilesRead }) {
                       Use This Sample
                     </button>
                   </div>
-                )}
+                ) : sampleContent === "Error loading sample file" ? (
+                  <div className="text-red-600 font-semibold p-4">{sampleContent}</div>
+                ) : null}
               </div>
             </div>
           )}
