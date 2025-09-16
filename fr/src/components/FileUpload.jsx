@@ -43,16 +43,14 @@ function FileUpload({ onFilesRead }) {
     }
   };
 
-  // Update the handleViewSample function with proper FASTA format
-  const handleViewSample = (sample) => {
-    const sampleContents = {
-      'maleria_1.txt': '>Malaria_Sample_1\nATCGTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTA\n',
-      'maleria_2.txt': '>Malaria_Sample_2\nTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCT\n',
-      'maleria_3.txt': '>Malaria_Sample_3\nGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAG\n',
-      'maleria_4.txt': '>Malaria_Sample_4\nCGTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTA\n',
-      'maleria_5.txt': '>Malaria_Sample_5\nTACGTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGC\n'
-    };
-    setSampleContent(sampleContents[sample] || '');
+  const handleViewSample = async (filename) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/sample/${filename}`);
+      const content = await response.text();
+      setSampleContent(content);
+    } catch (error) {
+      setSampleContent("Error loading sample file");
+    }
   };
 
   return (
@@ -124,35 +122,24 @@ function FileUpload({ onFilesRead }) {
                 <div className="space-y-3">
                   <h4 className="font-semibold text-gray-700 mb-2">Available Samples:</h4>
                   <button
-                    onClick={() => handleViewSample('maleria_1.txt')}
+                    onClick={() => handleViewSample('maleria_3.txt')}
                     className="block w-full text-left px-4 py-2 rounded-lg hover:bg-blue-50 text-sm text-gray-700"
                   >
                     🦠 Malaria Sample 1
                   </button>
                   <button
-                    onClick={() => handleViewSample('maleria_2.txt')}
+                    onClick={() => handleViewSample('maleria_4.txt')}
                     className="block w-full text-left px-4 py-2 rounded-lg hover:bg-blue-50 text-sm text-gray-700"
                   >
                     🦠 Malaria Sample 2
                   </button>
                   <button
-                    onClick={() => handleViewSample('maleria_3.txt')}
+                    onClick={() => handleViewSample('maleria_5.txt')}
                     className="block w-full text-left px-4 py-2 rounded-lg hover:bg-blue-50 text-sm text-gray-700"
                   >
                     🦠 Malaria Sample 3
                   </button>
-                  <button
-                    onClick={() => handleViewSample('maleria_4.txt')}
-                    className="block w-full text-left px-4 py-2 rounded-lg hover:bg-blue-50 text-sm text-gray-700"
-                  >
-                    🦠 Malaria Sample 4
-                  </button>
-                  <button
-                    onClick={() => handleViewSample('maleria_5.txt')}
-                    className="block w-full text-left px-4 py-2 rounded-lg hover:bg-blue-50 text-sm text-gray-700"
-                  >
-                    🦠 Malaria Sample 5
-                  </button>
+                  
                 </div>
                 
                 {sampleContent && (
