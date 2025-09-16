@@ -416,7 +416,7 @@ analyticsToSave[idx] = { ...res, transmission, drug_resistant };
           {results.length > 0 && (
             <div ref={analysisRef} className="space-y-8">
               {/* Sequence Selection Buttons */}
-              <div className="bg-white/80 backdrop-blur-lg rounded-2xl mt-8 shadow-2xl p-6 border border-white/20">
+              <div className="bg-gradient-to-l from-red-100 via-green-100 to-yellow-100 backdrop-blur-lg rounded-2xl mt-8 shadow-2xl p-6 border border-white/20">
                 <h3 className="text-2xl font-bold mb-6 flex items-center text-gray-800">
                   <Target className="w-7 h-7 mr-3 text-blue-600" />
                   Analysis Results Dashboard
