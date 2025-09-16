@@ -132,12 +132,18 @@ async def chatbot_endpoint(data: ChatBotRequest):
 @app.get("/sample/{filename}", response_class=PlainTextResponse)
 async def get_sample_file(filename: str):
     try:
-        base_dir = os.path.dirname(__file__)  # directory where main.py lives (bc/)
+        # Path relative to this file (bc/main.py)
+        base_dir = os.path.dirname(__file__)
         sample_path = os.path.join(base_dir, "sample", filename)
+
+        if not os.path.exists(sample_path):
+            raise HTTPException(status_code=404, detail="Sample file not found")
+
         with open(sample_path, "r") as f:
             return f.read()
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="Sample file not found")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/")
 async def root():
