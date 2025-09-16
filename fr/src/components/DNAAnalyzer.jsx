@@ -268,16 +268,15 @@ analyticsToSave[idx] = { ...res, transmission, drug_resistant };
       <DNABackground />
       
       <div className="relative z-10 py-3">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-2 sm:px-4 md:px-6">
           {/* Header */}
           <div className="text-center mb-3">
-            
-            <h1 className="font-ti  text-5xl md:text-5xl font-bold bg-gradient-to-r from-green-600 via-red-500 to-purple-600 bg-clip-text text-transparent mb-1">
+            <h1 className="font-ti text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-green-600 via-red-500 to-purple-600 bg-clip-text text-transparent mb-1">
               🧬 DNA Sequence Analyzer
             </h1>
-            <p className="text-xl md:text-xl text-gray-700 max-w-4xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-gray-700 max-w-4xl mx-auto leading-relaxed">
               Advanced pathogen genomics analysis of pathogens like
-              <span className="flex justify-center gap-2">
+              <span className="flex flex-wrap justify-center gap-2">
                 <span className="bg-red-500 font-bold bg-clip-text text-transparent">Maleria,</span>
                 <span className="bg-blue-500 font-bold bg-clip-text text-transparent">Diarrhea,</span>
                 <span className="bg-orange-500 font-bold bg-clip-text text-transparent">SARS COV 2</span>
@@ -288,7 +287,7 @@ analyticsToSave[idx] = { ...res, transmission, drug_resistant };
 
           {/* Input Section */}
           <div
-            className={`transition-all duration-500 mb-8${
+            className={`transition-all duration-500 mb-8 ${
               inputShrink && results.length > 0 ? "max-w-md mx-auto cursor-pointer transform hover:scale-105" : "w-full"
             }`}
             onClick={() => {
@@ -297,17 +296,17 @@ analyticsToSave[idx] = { ...res, transmission, drug_resistant };
           >
             <div
               className={`bg-gradient-to-l from-red-50 to bg-purple-50 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 transition-all duration-500 ${
-                inputShrink && results.length > 0 ? "p-6" : "p-8 pb-2 pt-6"
+                inputShrink && results.length > 0 ? "p-4 sm:p-6" : "p-4 sm:p-8 pb-2 pt-6"
               }`}
             >
               <h2
                 className={`font-bold flex items-center ${
-                  inputShrink && results.length > 0 ? "text-xl mb-4" : "text-3xl mb-8"
+                  inputShrink && results.length > 0 ? "text-lg sm:text-xl mb-4" : "text-xl sm:text-3xl mb-8"
                 } text-gray-700`}
               >
-                <Upload className={`mr-3 text-blue-600 ${inputShrink ? 'w-6 h-6' : 'w-8 h-8'}`} />
-                DNA Sequence Input Portal   🧬
-                <span className="ml-100 bg-gradient-to-r from-red-300 to-green-300 text-transparent bg-clip-text">(ATGC...)</span>
+                <Upload className={`mr-3 text-blue-600 ${inputShrink ? 'w-5 h-5 sm:w-6 sm:h-6' : 'w-6 h-6 sm:w-8 sm:h-8'}`} />
+                DNA Sequence Input Portal 🧬
+                <span className="ml-2 bg-gradient-to-r from-red-300 to-green-300 text-transparent bg-clip-text">(ATGC...)</span>
               </h2>
 
               {/* File Upload */}
@@ -319,16 +318,16 @@ analyticsToSave[idx] = { ...res, transmission, drug_resistant };
                   <div className="mt-8">
                     {sequences.length > 0 && (
                       <div>
-                        <h3 className="text-xl font-bold mb- bg-amber-100 rounded-4xl flex items-center text-gray-800">
-                          <CheckCircle2 className="w-6 h-6 mr-2 text-green-600" />
+                        <h3 className="text-lg sm:text-xl font-bold mb-2 bg-amber-100 rounded-4xl flex items-center text-gray-800">
+                          <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-green-600" />
                           Loaded Sequences ({sequences.length})
                         </h3>
-                        <div className="bg-gray-50 rounded-2xl p-6 mb- max-h-48 overflow-y-auto">
+                        <div className="bg-gray-50 rounded-2xl p-4 sm:p-6 mb-2 max-h-48 overflow-y-auto">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {sequences.map((seq, idx) => (
                               <div
                                 key={idx}
-                                className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm"
+                                className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200 shadow-sm"
                               >
                                 <div className="flex items-center justify-between mb-2">
                                   <span className="font-semibold text-gray-800">Sequence {idx + 1}</span>
@@ -336,9 +335,11 @@ analyticsToSave[idx] = { ...res, transmission, drug_resistant };
                                     {seq.length} bp
                                   </span>
                                 </div>
-                                <code className="text-xs text-gray-700 font-mono break-all">
-                                  {seq.slice(0, 80)}{seq.length > 80 ? "..." : ""}
-                                </code>
+                                <div className="overflow-x-auto">
+                                  <code className="text-xs text-gray-700 font-mono break-all block">
+                                    {seq.slice(0, 80)}{seq.length > 80 ? "..." : ""}
+                                  </code>
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -349,16 +350,16 @@ analyticsToSave[idx] = { ...res, transmission, drug_resistant };
                             type="button"
                             onClick={handleAnalyzeAll}
                             disabled={loading}
-                            className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 text-white px-12 py-4 rounded-2xl font-bold text-xl hover:from-blue-700 hover:via-purple-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-300 flex items-center space-x-3 shadow-2xl"
+                            className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 text-white px-6 sm:px-12 py-3 sm:py-4 rounded-2xl font-bold text-base sm:text-xl hover:from-blue-700 hover:via-purple-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-300 flex items-center space-x-3 shadow-2xl"
                           >
                             {loading ? (
                               <>
-                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                                <div className="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-b-2 border-white"></div>
                                 <span>Analyzing Sequences...</span>
                               </>
                             ) : (
                               <>
-                                <Activity className="w-6 h-6" />
+                                <Activity className="w-5 h-5 sm:w-6 sm:h-6" />
                                 <span>🚀 Analyze All Sequences</span>
                               </>
                             )}
@@ -372,11 +373,11 @@ analyticsToSave[idx] = { ...res, transmission, drug_resistant };
 
               {/* Shrunk input view */}
               {inputShrink && results.length > 0 && (
-                <div className="flex items-center justify-center py-6">
+                <div className="flex items-center justify-center py-4 sm:py-6">
                   <div className="text-center">
-                    <Upload className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                    <Upload className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 mx-auto mb-2" />
                     <span className="text-blue-600 font-semibold">Click to expand input section</span>
-                    <div className="text-sm text-gray-500 mt-1">{sequences.length} sequences loaded</div>
+                    <div className="text-xs sm:text-sm text-gray-500 mt-1">{sequences.length} sequences loaded</div>
                   </div>
                 </div>
               )}
@@ -385,16 +386,16 @@ analyticsToSave[idx] = { ...res, transmission, drug_resistant };
 
           {/* Loading Indicator */}
           {loading && (
-            <div className="flex flex-col items-center justify-center mb-8 mt-10 bg-gradient-to-l from-red-100 to-blue-100 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/20">
+            <div className="flex flex-col items-center justify-center mb-8 mt-10 bg-gradient-to-l from-red-100 to-blue-100 backdrop-blur-lg rounded-2xl p-4 sm:p-8 shadow-2xl border border-white/20">
               <div className="flex items-center mb-4">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mr-4"></div>
-                <span className="text-blue-700 font-bold text-2xl">AI Model Processing...</span>
+                <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-4 border-blue-600 mr-4"></div>
+                <span className="text-blue-700 font-bold text-lg sm:text-2xl">AI Model Processing...</span>
               </div>
-              <div className="w-full max-w-md bg-gray-200 rounded-full h-3 mb-4">
-                <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full animate-pulse" style={{width: '70%'}}></div>
+              <div className="w-full max-w-md bg-gray-200 rounded-full h-2 sm:h-3 mb-4">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 sm:h-3 rounded-full animate-pulse" style={{width: '70%'}}></div>
               </div>
-              <p className="text-gray-600 font-medium text-center">{processingStep}</p>
-              <div className="flex items-center space-x-2 mt-4 text-sm text-gray-500">
+              <p className="text-gray-600 font-medium text-center text-sm sm:text-base">{processingStep}</p>
+              <div className="flex flex-wrap items-center space-x-2 mt-4 text-xs sm:text-sm text-gray-500">
                 <span className="flex items-center"><div className="w-2 h-2 bg-blue-500 rounded-full mr-1 animate-pulse"></div>Deep Learning Analysis</span>
                 <span className="flex items-center"><div className="w-2 h-2 bg-purple-500 rounded-full mr-1 animate-pulse"></div>Pathogen Classification</span>
                 <span className="flex items-center"><div className="w-2 h-2 bg-cyan-500 rounded-full mr-1 animate-pulse"></div>Risk Assessment</span>
@@ -404,10 +405,10 @@ analyticsToSave[idx] = { ...res, transmission, drug_resistant };
 
           {/* Error Display */}
           {error && (
-            <div className="bg-red-50/80 backdrop-blur-lg border-2 border-red-200 rounded-2xl p-6 mb-8 shadow-lg">
+            <div className="bg-red-50/80 backdrop-blur-lg border-2 border-red-200 rounded-2xl p-4 sm:p-6 mb-8 shadow-lg">
               <div className="flex items-center">
-                <AlertCircle className="w-6 h-6 text-red-600 mr-3" />
-                <span className="text-red-800 font-semibold text-lg">{error}</span>
+                <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 mr-3" />
+                <span className="text-red-800 font-semibold text-base sm:text-lg">{error}</span>
               </div>
             </div>
           )}
@@ -416,18 +417,18 @@ analyticsToSave[idx] = { ...res, transmission, drug_resistant };
           {results.length > 0 && (
             <div ref={analysisRef} className="space-y-8">
               {/* Sequence Selection Buttons */}
-              <div className="bg-gradient-to-l from-red-100 via-green-100 to-yellow-100 backdrop-blur-lg rounded-2xl mt-8 shadow-2xl p-6 border border-white/20">
-                <h3 className="text-2xl font-bold mb-6 flex items-center text-gray-800">
-                  <Target className="w-7 h-7 mr-3 text-blue-600" />
+              <div className="bg-gradient-to-l from-red-100 via-green-100 to-yellow-100 backdrop-blur-lg rounded-2xl mt-8 shadow-2xl p-4 sm:p-6 border border-white/20">
+                <h3 className="text-lg sm:text-2xl font-bold mb-4 sm:mb-6 flex items-center text-gray-800">
+                  <Target className="w-6 h-6 sm:w-7 sm:h-7 mr-2 sm:mr-3 text-blue-600" />
                   Analysis Results Dashboard
                 </h3>
-                <div className="flex flex-wrap gap-4 mb-6">
+                <div className="flex flex-wrap gap-2 sm:gap-4 mb-4 sm:mb-6">
                   {results.map((res, idx) => {
                     const risk = getRiskLevel(res.transmission ?? 0);
                     return (
                       <button
                         key={idx}
-                        className={`rounded-2xl px-6 py-4 shadow-lg font-bold text-sm border-2 transition-all duration-300 transform hover:scale-105 ${
+                        className={`rounded-2xl px-4 py-2 sm:px-6 sm:py-4 shadow-lg font-bold text-xs sm:text-sm border-2 transition-all duration-300 transform hover:scale-105 ${
                           expandedIdx === idx
                             ? "border-blue-500 bg-gradient-to-r from-blue-50 to-purple-50 scale-105 shadow-2xl"
                             : "border-gray-200 bg-white hover:border-blue-400 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50"
@@ -446,11 +447,11 @@ analyticsToSave[idx] = { ...res, transmission, drug_resistant };
                 </div>
 
                 {/* Progress Indicator */}
-                <div className="flex items-center justify-center space-x-2 mb-4">
+                <div className="flex items-center justify-center space-x-1 sm:space-x-2 mb-2 sm:mb-4">
                   {results.map((_, idx) => (
                     <div
                       key={idx}
-                      className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                      className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
                         expandedIdx === idx ? 'bg-blue-500 scale-125' : 'bg-gray-300'
                       }`}
                     />
@@ -466,12 +467,12 @@ analyticsToSave[idx] = { ...res, transmission, drug_resistant };
                   return <Analytics result={analytics} />;
                 } else {
                   return (
-                    <div className="bg-red-50/80 backdrop-blur-lg border-2 border-red-200 rounded-2xl p-8 mb-4 shadow-lg">
+                    <div className="bg-red-50/80 backdrop-blur-lg border-2 border-red-200 rounded-2xl p-6 sm:p-8 mb-4 shadow-lg">
                       <div className="flex items-center justify-center">
-                        <AlertCircle className="w-8 h-8 text-red-600 mr-4" />
+                        <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-red-600 mr-3 sm:mr-4" />
                         <div>
-                          <div className="text-red-800 font-bold text-xl mb-2">Analysis Failed</div>
-                          <span className="text-red-700 font-medium">
+                          <div className="text-red-800 font-bold text-base sm:text-xl mb-2">Analysis Failed</div>
+                          <span className="text-red-700 font-medium text-sm sm:text-base">
                             {results[expandedIdx].error}
                           </span>
                         </div>
@@ -483,20 +484,20 @@ analyticsToSave[idx] = { ...res, transmission, drug_resistant };
 
               {/* Action Buttons */}
               {results[expandedIdx] && !results[expandedIdx].error && (
-                <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border border-white/20">
-                  <div className="flex flex-wrap gap-4 justify-center">
+                <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-4 sm:p-6 border border-white/20">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                     <button
                       onClick={handleDownloadReport}
-                      className="flex items-center gap-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-bold shadow-lg transform transition-all duration-200 hover:scale-105"
+                      className="flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 sm:px-8 py-3 sm:py-4 rounded-xl font-bold shadow-lg transform transition-all duration-200 hover:scale-105"
                     >
-                      <Download size={20} />
+                      <Download size={18} className="sm:size-20" />
                       📄 Download Detailed Report
                     </button>
                     <button
                       onClick={() => navigate("/export")}
-                      className="flex items-center gap-3 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white px-8 py-4 rounded-xl font-bold shadow-lg transform transition-all duration-200 hover:scale-105"
+                      className="flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white px-4 sm:px-8 py-3 sm:py-4 rounded-xl font-bold shadow-lg transform transition-all duration-200 hover:scale-105"
                     >
-                      <Share2 size={20} />
+                      <Share2 size={18} className="sm:size-20" />
                       🌍 Export to Global Dashboard
                     </button>
                   </div>
@@ -507,21 +508,21 @@ analyticsToSave[idx] = { ...res, transmission, drug_resistant };
 
           {/* Info Cards */}
           {!loading && results.length === 0 && sequences.length === 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
-              <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20 text-center transform hover:scale-105 transition-all duration-300">
-                <div className="text-4xl mb-4">🧬</div>
-                <h3 className="text-xl font-bold bg-gradient-to-r from-red-500 to-yellow-400 bg-clip-text text-transparent mb-2">Advanced Analysis</h3>
-                <p className="text-gray-600">Deep learning models analyze DNA sequences for pathogen characteristics and risk assessment.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mt-4">
+              <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 text-center transform hover:scale-105 transition-all duration-300">
+                <div className="text-3xl sm:text-4xl mb-2 sm:mb-4">🧬</div>
+                <h3 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-red-500 to-yellow-400 bg-clip-text text-transparent mb-2">Advanced Analysis</h3>
+                <p className="text-gray-600 text-sm sm:text-base">Deep learning models analyze DNA sequences for pathogen characteristics and risk assessment.</p>
               </div>
-              <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20 text-center transform hover:scale-105 transition-all duration-300">
-                <div className="text-4xl mb-4">📊</div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2 bg-gradient-to-r from-yellow-500 to-green-400 bg-clip-text text-transparent">Comprehensive Reports</h3>
-                <p className="text-gray-600">Generate detailed analytics with transmission rates, drug resistance, and mutation analysis.</p>
+              <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 text-center transform hover:scale-105 transition-all duration-300">
+                <div className="text-3xl sm:text-4xl mb-2 sm:mb-4">📊</div>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2 bg-gradient-to-r from-yellow-500 to-green-400 bg-clip-text text-transparent">Comprehensive Reports</h3>
+                <p className="text-gray-600 text-sm sm:text-base">Generate detailed analytics with transmission rates, drug resistance, and mutation analysis.</p>
               </div>
-              <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20 text-center transform hover:scale-105 transition-all duration-300">
-                <div className="text-4xl mb-4">🌍</div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2 bg-gradient-to-r from-green-500 to-violet-400 bg-clip-text text-transparent">Global Integration</h3>
-                <p className="text-gray-600">Export results to the global surveillance dashboard for worldwide pathogen monitoring.</p>
+              <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 text-center transform hover:scale-105 transition-all duration-300">
+                <div className="text-3xl sm:text-4xl mb-2 sm:mb-4">🌍</div>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2 bg-gradient-to-r from-green-500 to-violet-400 bg-clip-text text-transparent">Global Integration</h3>
+                <p className="text-gray-600 text-sm sm:text-base">Export results to the global surveillance dashboard for worldwide pathogen monitoring.</p>
               </div>
             </div>
           )}
