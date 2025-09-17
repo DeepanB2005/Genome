@@ -295,8 +295,8 @@ analyticsToSave[idx] = { ...res, transmission, drug_resistant };
             }}
           >
             <div
-              className={`bg-gradient-to-l from-red-50 to bg-purple-50 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 transition-all duration-500 ${
-                inputShrink && results.length > 0 ? "p-4 sm:p-6" : "p-4 sm:p-8 pb-2 pt-6"
+              className={`bg-gradient-to-l from-red-50 to bg-purple-50 backdrop-blur-lg rounded-3xl shadow-2xl border border-white transition-all duration-500 ${
+                inputShrink && results.length > 0 ? "p-4 sm:p-6" : "p-4 sm:p-7 pb-2 pt-6"
               }`}
             >
               <h2
@@ -508,18 +508,18 @@ analyticsToSave[idx] = { ...res, transmission, drug_resistant };
 
           {/* Info Cards */}
           {!loading && results.length === 0 && sequences.length === 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mt-4">
-              <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 text-center transform hover:scale-105 transition-all duration-300">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mt-2">
+              <div className=" bg-yellow-50 backdrop-blur-lg rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 text-center transform hover:scale-105 transition-all duration-300">
                 <div className="text-3xl sm:text-4xl mb-2 sm:mb-4">🧬</div>
                 <h3 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-red-500 to-yellow-400 bg-clip-text text-transparent mb-2">Advanced Analysis</h3>
                 <p className="text-gray-600 text-sm sm:text-base">Deep learning models analyze DNA sequences for pathogen characteristics and risk assessment.</p>
               </div>
-              <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 text-center transform hover:scale-105 transition-all duration-300">
+              <div className="bg-violet-50 backdrop-blur-lg rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 text-center transform hover:scale-105 transition-all duration-300">
                 <div className="text-3xl sm:text-4xl mb-2 sm:mb-4">📊</div>
                 <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2 bg-gradient-to-r from-yellow-500 to-green-400 bg-clip-text text-transparent">Comprehensive Reports</h3>
                 <p className="text-gray-600 text-sm sm:text-base">Generate detailed analytics with transmission rates, drug resistance, and mutation analysis.</p>
               </div>
-              <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 text-center transform hover:scale-105 transition-all duration-300">
+              <div className="bg-green-50 backdrop-blur-lg rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 text-center transform hover:scale-105 transition-all duration-300">
                 <div className="text-3xl sm:text-4xl mb-2 sm:mb-4">🌍</div>
                 <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2 bg-gradient-to-r from-green-500 to-violet-400 bg-clip-text text-transparent">Global Integration</h3>
                 <p className="text-gray-600 text-sm sm:text-base">Export results to the global surveillance dashboard for worldwide pathogen monitoring.</p>
