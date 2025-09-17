@@ -1,41 +1,49 @@
 import React, { useState, useCallback } from "react";
-import { Upload } from "lucide-react";
+import { Upload, Clipboard, BookOpen, FileText } from "lucide-react";
 
-// Use the environment variable for API URL
-const API_URL = import.meta.env.VITE_BCAPI || "https://genome-ytvz.onrender.com";
-
-// Enhanced File Upload Component
 function FileUpload({ onFilesRead }) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showSamples, setShowSamples] = useState(false);
-  const [sampleContent, setSampleContent] = useState("");
-  const [inputShrink, setInputShrink] = useState(false);
-  const [sequences, setSequences] = useState([]);
+  const [pasteValue, setPasteValue] = useState("");
+  const [loadedFiles, setLoadedFiles] = useState([]); // file names + content
+  const [activeContent, setActiveContent] = useState("");
 
-  const handleFiles = useCallback((files) => {
-    const readers = [];
-    const results = [];
-    let loaded = 0;
-    setUploadProgress(0);
+  // Sample DNA sequences
+  const samples = {
+    malaria1: "ATGCGTAGCTAGCTAGCGTACGTAGCTAGCTGACTTTACATATCTATTACATATCTAATCTTTGTGTATTTTTTATCCTTTCTGTAAATATTGTCTTATGTTCATTAAATAAATCATTTTTAAATGTTCATAATACTTTATAAAAACATAAATATAATTTTTCATTTCATCAATTGATTTTCCATCTTTATCTAATTTATAAAAATTAAGAGTATGTTCAATGTCTGTAGATGATAGTGCCACTCCAATATCATGCATATCTTTGTGTATTTTTTATCCTTTCTGTAAATATTGTCTTATGTTCATTAAATAAATCATTTTTAAATGTTCATAATACTTTATAAAAACATAAATATAATTTTTCATTTCATCAATTGATTTTCCATCTTTATCTAATTTATAAAAATTAAGAGTATGTTCAATGTCTGTAGATGATAGTGCCACTCCAATATCATGCAT",
+    malaria2: "GCTAGCTAGTTACATATCTAATCTTTGTGTATTTTTTATCCTTTCTGTAAATATTGTCTTATGTTCATTAAATAAATCATTTTTAAATGTTCATAATACTTTATAAAAACATAAATATAATTTTTCATTTCATCAATTGATTTTCCATCTTTATCTAATTTATAAAAATTAAGAGTATGTTCAATGTCTGTAGATGATAGTGCCACTCCAATATCATGCATGCTTACGATCGTAGCTAGCATCGTAA",
+    malaria3: "TTGACGTAGCTAGCTACGATCGTACGTTTACATATCTAATCTTTGTGTATTTTTTATCCTTTCTGTAAATATTGTCTTATGTTCATTAAATAAATCATTTTTAAATGTTCATAATACTTTATAAAAACATAAATATAATTTTTCATTTCATCAATTGATTTTCCATCTTTATCTAATTTATAAAAATTAAGAGTATGTTCAATGTCTGTAGATGATAGTGCCACTCCAATATCATGCATAGCATCGA"
+  };
 
-    Array.from(files).forEach((file, idx) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        results[idx] = e.target.result;
-        loaded++;
-        setUploadProgress((loaded / files.length) * 100);
-        if (loaded === files.length) {
-          setTimeout(() => {
-            onFilesRead(results);
-            setUploadProgress(0);
-          }, 500);
-        }
-      };
-      reader.readAsText(file);
-      readers.push(reader);
-    });
-  }, [onFilesRead]);
+  const handleFiles = useCallback(
+    (files) => {
+      const results = [];
+      const tempFiles = [];
+      let loaded = 0;
+      setUploadProgress(0);
+
+      Array.from(files).forEach((file, idx) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          results[idx] = e.target.result;
+          tempFiles[idx] = { name: file.name, content: e.target.result };
+          loaded++;
+          setUploadProgress((loaded / files.length) * 100);
+          if (loaded === files.length) {
+            setTimeout(() => {
+              onFilesRead(results);
+              setLoadedFiles(tempFiles);
+              setActiveContent(tempFiles[0]?.content || ""); // show first file by default
+              setUploadProgress(0);
+            }, 500);
+          }
+        };
+        reader.readAsText(file);
+      });
+    },
+    [onFilesRead]
+  );
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -46,131 +54,146 @@ function FileUpload({ onFilesRead }) {
     }
   };
 
-  const handleViewSample = async (filename) => {
-    try {
-      const response = await fetch(`${API_URL}/sample/${filename}`);
-      const content = await response.text();
-      setSampleContent(content);
-    } catch (error) {
-      setSampleContent("Error loading sample file");
+  const handlePasteSubmit = () => {
+    if (pasteValue.trim()) {
+      onFilesRead([pasteValue.trim()]);
+      setActiveContent(pasteValue.trim());
+      setPasteValue("");
     }
   };
 
+  const handleSampleClick = (seq) => {
+    onFilesRead([seq]);
+    setActiveContent(seq);
+  };
+
   return (
-    <div>
-      <div
-        onDrop={handleDrop}
-        onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
-        onDragLeave={() => setIsDragOver(false)}
-        className={`relative border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-300 ${
-          isDragOver 
-            ? 'border-blue-500 bg-blue-500 backdrop-blur-lg scale-105 shadow-2xl' 
-            : 'border-purple-300 hover:border-blue-600 hover:bg-gradient-to-br hover:from-blue-100 hover:to-purple-50/50 bg-white/60 backdrop-blur-sm'
-        }`}
-      >
-        <div className="flex flex-col items-center space-y-6">
-          <div className={`p-6 rounded-full transition-all duration-300 ${
-            isDragOver ? 'bg-blue-100 scale-110' : 'bg-gradient-to-br from-purple-300 to-blue-100'
-          }`}>
-            <Upload className={`w-12 h-8 transition-colors duration-300 ${
-              isDragOver ? 'text-blue-600' : 'text-purple-600'
-            }`} />
-          </div>
-          <div>
-            <p className="text-xl font-ti font-bold bg-gradient-to-r from-blue-500 to-violet-400 text-transparent bg-clip-text mb-2">Drop your FASTA/FNA files here</p>
-            <p className="text-sm text-gray-600">or click to browse • Multiple files supported</p>
-            <div className="flex items-center justify-center mt-3 space-x-2 text-xs text-gray-500">
-              <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full">✓ .fasta</span>
-              <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full">✓ .fna</span>
-            </div>
-          </div>
-          
-          {uploadProgress > 0 && (
-            <div className="w-full max-w-xs">
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-              <p className="text-sm text-gray-600 mt-2">Uploading... {uploadProgress.toFixed(0)}%</p>
-            </div>
-          )}
-          
+    <div className="w-full max-w-5xl mx-auto space-y-6 h-[300px]">
+      {/* Main Container */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Drop Zone */}
+        <div
+          onDrop={handleDrop}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragOver(true);
+          }}
+          onDragLeave={() => setIsDragOver(false)}
+          className={`relative flex-1 min-h-[250px] border-2 border-dashed rounded-3xl p-8 flex flex-col items-center justify-center transition-all duration-300 shadow-lg
+            ${
+              isDragOver
+                ? "border-pink-500 bg-gradient-to-br from-pink-50 to-pink-100 scale-[1.03]"
+                : "border-purple-400 hover:border-blue-500 bg-gradient-to-br from-white to-purple-50"
+            }`}
+        >
+          <Upload className="w-16 h-16 text-purple-600 mb-4 animate-pulse" />
+          <span className="text-base font-semibold text-gray-800">
+                  <div className="text-center">
+        <h2 className=" font-bold text-purple-700 drop-shadow-md">
+          DNA Sequence Upload Center
+        </h2>
+        <p className="text-gray-600 text-sm">
+          Upload <span className="font-semibold">.fasta, .fna, .txt</span> files,
+          paste sequence, or use a sample 🧬
+        </p>
+      </div>
+          </span>
           <input
             type="file"
-            accept=".fasta,.fna"
+            accept=".fasta,.fna,.txt"
             multiple
             onChange={(e) => handleFiles(e.target.files)}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
-        </div>
-      </div>
-      
-      {/* Sample Files Section */}
-      {!inputShrink && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between ">
-            <button
-              onClick={() => setShowSamples(!showSamples)}
-              className="text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-2"
-            >
-              📚 View Sample Files {showSamples ? '▼' : '▶'}
-            </button>
-          </div>
-          
-          {showSamples && (
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-gray-200">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-gray-700 mb-2">Available Samples:</h4>
-                  <button
-                    onClick={() => handleViewSample('maleria_3.txt')}
-                    className="block w-full text-left px-4 py-2 rounded-lg hover:bg-blue-50 text-sm text-gray-700"
-                  >
-                    🦠 Malaria Sample 1
-                  </button>
-                  <button
-                    onClick={() => handleViewSample('maleria_4.txt')}
-                    className="block w-full text-left px-4 py-2 rounded-lg hover:bg-blue-50 text-sm text-gray-700"
-                  >
-                    🦠 Malaria Sample 2
-                  </button>
-                  <button
-                    onClick={() => handleViewSample('maleria_5.txt')}
-                    className="block w-full text-left px-4 py-2 rounded-lg hover:bg-blue-50 text-sm text-gray-700"
-                  >
-                    🦠 Malaria Sample 3
-                  </button>
-                  
-                </div>
-                
-                {sampleContent && sampleContent !== "Error loading sample file" ? (
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="font-semibold text-gray-700 mb-2">Sample Content:</h4>
-                    <code className="text-xs text-gray-600 font-mono break-all block max-h-40 overflow-y-auto">
-                      {sampleContent}
-                    </code>
-                    <button
-                      onClick={() => {
-                        onFilesRead([sampleContent]);
-                        setShowSamples(false);
-                        setSequences([sampleContent]);
-                      }}
-                      className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700"
-                    >
-                      Use This Sample
-                    </button>
-                  </div>
-                ) : sampleContent === "Error loading sample file" ? (
-                  <div className="text-red-600 font-semibold p-4">{sampleContent}</div>
-                ) : null}
+
+          {uploadProgress > 0 && (
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-4/5">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-gradient-to-r from-pink-500 to-purple-600 h-2 rounded-full transition-all"
+                  style={{ width: `${uploadProgress}%` }}
+                />
               </div>
+              <p className="text-xs text-gray-600 mt-1 text-center">
+                Uploading... {Math.round(uploadProgress)}%
+              </p>
             </div>
           )}
         </div>
-      )}
+
+        {/* Paste + Loaded Viewer */}
+        <div className="flex-1 flex flex-col bg-gradient-to-br from-white to-blue-50 border-2 border-dashed border-blue-400 rounded-3xl p-5 max-w-96 shadow-lg">
+          {/* Paste Input */}
+          <div className="flex-1 flex flex-col mb-4  bg-gradient-to-br from-white to-blue-50 border border-blue-200 rounded-3xl p-5 max-w-96 max-h-20 shadow-lg">
+  <div className="flex items-start gap-2">
+  <Clipboard className="text-blue-600 w-5 h-5 mt-1" />
+ <textarea
+  placeholder="Paste DNA sequence..."
+  value={pasteValue}
+  onChange={(e) => setPasteValue(e.target.value)}
+  className="flex-1 bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm px-2 py-1 resize-none max-h-24 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-400 scrollbar-track-blue-100 rounded-md"
+  rows={2}
+/>
+
+  <button
+    onClick={handlePasteSubmit}
+    className="px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-lg hover:opacity-90 text-sm font-semibold shadow-md h-fit"
+  >
+    Add
+  </button>
+</div>
+
+</div>
+
+
+          {/* Active Sequence Viewer */}
+          <div className="flex-1 bg-blue-50 border border-gray-200 rounded-xl p-3 
+     overflow-auto text-xs font-mono text-gray-700 shadow-inner 
+     max-h-32 h-48">
+            {activeContent ? (
+              <pre className="whitespace-pre-wrap break-words">
+                {activeContent}
+              </pre>
+            ) : (
+              <span className="text-gray-400 italic">
+                No sequence selected yet
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      
+      {/* Sample Sequences */}
+      <div className="text-center">
+        <button
+          onClick={() => setShowSamples(!showSamples)}
+          className="flex items-center justify-center gap-2 mx-auto text-pink-600 hover:text-pink-700 font-semibold text-sm"
+        >
+          <BookOpen className="h-4" />
+          {showSamples ? "Hide Sample Sequences" : "Show Sample Sequences"}
+        </button>
+        {!showSamples && (
+          <div className="text-xs text-gray-500 mt-1">
+            Click here to use sample sequence
+          </div>
+        )}
+        {showSamples && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-5 mt-1">
+            {Object.entries(samples).map(([key, seq]) => (
+              <button
+                key={key}
+                onClick={() => handleSampleClick(seq)}
+                className="px-3 py-2 rounded-lg text-xs bg-gradient-to-r from-blue-100 to-purple-100 hover:from-blue-200 hover:to-purple-200 text-purple-700 font-medium shadow"
+              >
+                🧬 {key}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+
 export default FileUpload;
