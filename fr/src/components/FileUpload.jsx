@@ -1,6 +1,16 @@
 import React, { useState, useCallback } from "react";
 import { Upload, Clipboard, BookOpen, FileText } from "lucide-react";
 
+// Remove all whitespace from a string
+function removeWhitespace(str) {
+  return str.replace(/\s+/g, "");
+}
+
+// Validate if the sequence contains only A, T, G, C (case-insensitive)
+function isValidDNA(seq) {
+  return /^[ATGC]*$/i.test(seq);
+}
+
 function FileUpload({ onFilesRead }) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -55,16 +65,24 @@ function FileUpload({ onFilesRead }) {
   };
 
   const handlePasteSubmit = () => {
-    if (pasteValue.trim()) {
-      onFilesRead([pasteValue.trim()]);
-      setActiveContent(pasteValue.trim());
+    const cleaned = removeWhitespace(pasteValue.trim().toUpperCase());
+    if (cleaned && isValidDNA(cleaned)) {
+      onFilesRead([cleaned]);
+      setActiveContent(cleaned);
       setPasteValue("");
+    } else if (cleaned) {
+      alert("Invalid DNA sequence! Only A, T, G, C characters are allowed.");
     }
   };
 
   const handleSampleClick = (seq) => {
-    onFilesRead([seq]);
-    setActiveContent(seq);
+    const cleaned = removeWhitespace(seq.toUpperCase());
+    if (isValidDNA(cleaned)) {
+      onFilesRead([cleaned]);
+      setActiveContent(cleaned);
+    } else {
+      alert("Invalid DNA sequence in sample!");
+    }
   };
 
   return (
