@@ -100,6 +100,11 @@ export default function ChatBot({ analysisResult }) {
               placeholder="Type your question..."
               className="flex-1 border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
               disabled={loading}
+              onKeyDown={e => {
+                if (e.key === "Enter" && !loading) {
+                  sendMessage(false);
+                }
+              }}
             />
             <div className="flex gap-2">
               <button
