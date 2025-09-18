@@ -2,8 +2,20 @@ import React, { useState, useRef, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, PieChart, Pie, Cell, LineChart, Line, ResponsiveContainer } from "recharts";
-import { MapPin, Search, Globe, Activity, Shield, Zap, TrendingUp, Download, Settings, Eye, MapPinned } from "lucide-react";
+import { MapPin, Search, Globe, Activity, Shield, Zap, TrendingUp, Download, Settings, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import L from "leaflet";
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
+
+// Fix leaflet's default icon path for React
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+});
 
 export default function ExportData() {
   const [coords, setCoords] = useState(null);
@@ -239,35 +251,44 @@ export default function ExportData() {
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 />
                 {pins.map((pin, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      position: "absolute",
-                      left: `${50 + (idx * 2)}%`, // This is a placeholder, see note below
-                      top: `${50 + (idx * 2)}%`,  // You should convert lat/lng to pixel if you want accurate placement
-                      zIndex: 1000,
-                      pointerEvents: "auto"
-                    }}
-                    title={pin.locationName}
-                  >
-                    <MapPinned size={32} color={pin.color} className="drop-shadow-lg animate-bounce" />
-                    {/* Tooltip-like info */}
-                    <div className="bg-white/90 rounded-lg shadow-lg p-2 mt-1 text-xs font-medium text-gray-700">
-                      <div>{pin.locationName}</div>
-                      <div>🦠 {(pin.analytics.transmission * 100).toFixed(1)}%</div>
-                      <div>🛡️ {(pin.analytics.drug_resistant * 100).toFixed(1)}%</div>
-                      <div>🧬 {(pin.analytics.mutation * 100).toFixed(1)}%</div>
-                      <div className="mt-1">
-                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                          pin.riskLevel === 'High' ? 'bg-red-100 text-red-800' :
-                          pin.riskLevel === 'Medium' ? 'bg-orange-100 text-orange-800' :
-                          'bg-green-100 text-green-800'
-                        }`}>
-                          {pin.riskLevel}
-                        </span>
+                  <Marker key={idx} position={pin.coords}>
+                    <Tooltip>
+                      <div className="p-3 min-w-64">
+                        <div className="font-bold text-lg mb-2 flex items-center gap-2">
+                          📍 {pin.locationName}
+                        </div>
+                        <div className="space-y-1 text-sm">
+                          <div className="flex justify-between">
+                            <span>🦠 Transmission:</span>
+                            <span className="font-semibold text-red-600">{(pin.analytics.transmission * 100).toFixed(1)}%</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>🛡️ Drug Resistance:</span>
+                            <span className="font-semibold text-orange-600">{(pin.analytics.drug_resistant * 100).toFixed(1)}%</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>🧬 Mutation:</span>
+                            <span className="font-semibold text-green-600">{(pin.analytics.mutation * 100).toFixed(1)}%</span>
+                          </div>
+                          <div className="mt-2 pt-2 border-t">
+                            <div className="flex justify-between items-center">
+                              <span>Risk Level:</span>
+                              <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                                pin.riskLevel === 'High' ? 'bg-red-100 text-red-800' :
+                                pin.riskLevel === 'Medium' ? 'bg-orange-100 text-orange-800' :
+                                'bg-green-100 text-green-800'
+                              }`}>
+                                {pin.riskLevel}
+                              </span>
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1">
+                              📅 {pin.timestamp}
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                    </Tooltip>
+                  </Marker>
                 ))}
               </MapContainer>
             </div>
