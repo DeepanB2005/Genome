@@ -309,7 +309,6 @@ analyticsToSave[idx] = { ...res, transmission, drug_resistant };
                 <span className="ml-2 bg-gradient-to-r from-red-300 to-green-300 text-transparent bg-clip-text">(ATGC...)</span>
               </h2>
 
-              {/* File Upload */}
               {!inputShrink && (
                 <>
                   <FileUpload onFilesRead={handleFilesRead} />

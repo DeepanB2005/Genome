@@ -140,6 +140,11 @@ export default function ExportData() {
     }
   };
 
+  // Scroll to top on mount (after redirect)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 relative">
       <DNABackground />

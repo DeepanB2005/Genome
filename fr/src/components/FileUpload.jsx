@@ -77,6 +77,7 @@ function FileUpload({ onFilesRead }) {
 
   const handleSampleClick = (seq) => {
     const cleaned = removeWhitespace(seq.toUpperCase());
+    console.log("Sample Clicked:", cleaned); // Add this line
     if (isValidDNA(cleaned)) {
       onFilesRead([cleaned]);
       setActiveContent(cleaned);
