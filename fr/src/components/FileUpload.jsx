@@ -189,7 +189,7 @@ function FileUpload({ onFilesRead }) {
         </button>
         {!showSamples && (
           <div className="text-xs text-gray-500 mt-1">
-            Click here to use sample sequence
+            Click here to use sample sequence(shuffle for each run time)
           </div>
         )}
         {showSamples && (
